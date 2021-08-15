@@ -8,14 +8,14 @@ export default class extends AbstractView {
 
     async getHtml() {
         return `
-            <h1>Posts</h1>
-            <p>You are viewing the posts!</p>
+            <h1>Annotator</h1>
+            <p>Start annotating images here</p>
 
             <input id="upload" type="file" onchange="handleImageUpload()"/>
 
             </br>
             <div>
-                <img id="annoImg" src=""/>
+                <img class="imgToAnnot" id="annoImg" src=""/>
             </div>
         `;
     }

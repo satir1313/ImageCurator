@@ -29,6 +29,15 @@
         <a href="/settings" class="nav__link" data-link>Settings</a>
     </nav>
     <div id="app"></div>
+
+    <form>
+      <div>
+        <input type="text" id="txt1"></input>
+        <button id="btnSend" onclick="getQuery(document.getElementById(txt1).nodeValue)">Send</button>
+      </div>
+    </form>
+
+    <script type="text/javascript" src="../api.js"></script>
     <script type="module" src="/static/js/index.js"></script>
 </body>
 </html>

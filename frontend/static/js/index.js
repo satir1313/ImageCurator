@@ -3,6 +3,14 @@ import Settings from "./views/Settings.js";
 import Annotate from "./views/Annotate.js";
 import AnnotateView from "./views/AnnotateView.js";
 
+// @ts-ignore
+//import { client } from '../../../node_modules/connection/index.js';
+//const client = require ("connection");
+
+//setClientCredential();
+//connect();
+//client.connect();
+
 const pathToRegex = path => new RegExp("^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$");
 
 const getParams = match => {

@@ -1,4 +1,4 @@
-const client = require('./dbconnection');
+
 const express = require ('express');
 const bodyParser = require ('body-parser')
 const app = express();
@@ -8,23 +8,34 @@ app.use(bodyParser.json());
 var latestRes;
 
 
-app.listen(3300, () => {
-    console.log("Server is now listening at port 3300");
-})
-
-client.connect();
+//app.listen(4056, () => {
+    //console.log("Server is now listening at port 3300");
+//})
 
 
 //get all images
-    app.get('/api', (req, res) => {
-        client.query('SELECT * FROM image', (err, result) =>{
-            if(!err){
-                res.send(result.rows);
-                latestRes = result.rows;
+    function getQuery(getQuery){
+        app.get('/api', (req, res) => {
+            client.query(getQuery, (err, result) =>{
+                if(!err){
+                    res.send(result.rows);
+                    latestRes = result.rows;
+                }
+            });
+            client.end;
+        })
+    }
+    function getPersons() {
+        var xmlHttpRequest = new XMLHttpRequest();
+    
+        xmlHttpRequest.onreadystatechange = function() {
+            if ( xmlHttpRequest.readyState == XMLHttpRequest.DONE && xmlHttpRequest.status == 200 ) {
+                document.getElementById("persons").innerHTML = xmlHttpRequest.responseText;
             }
-        });
-        client.end;
-    })
+        };
+        xmlHttpRequest.open('GET', 'http://localhost/api', true);
+        xmlHttpRequest.send();
+    }
 
 
     //get image by id

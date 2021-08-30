@@ -1,7 +1,9 @@
-import Dashboard from "./views/Dashboard.js";
+/*import Dashboard from "./views/Dashboard.js";
 import Settings from "./views/Settings.js";
 import Annotate from "./views/Annotate.js";
 import AnnotateView from "./views/AnnotateView.js";
+
+const db = require('./queries');
 
 // @ts-ignore
 //import { client } from '../../../node_modules/connection/index.js';
@@ -10,6 +12,12 @@ import AnnotateView from "./views/AnnotateView.js";
 //setClientCredential();
 //connect();
 //client.connect();
+
+app.get('/users', db.getUsers);
+app.get('/users/:id', db.getUserById);
+app.post('/users', db.createUser);
+app.put('/users/:id', db.updateUser);
+app.delete('/users/:id', db.deleteUser);
 
 const pathToRegex = path => new RegExp("^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$");
 
@@ -20,7 +28,7 @@ const getParams = match => {
     return Object.fromEntries(keys.map((key, i) => {
         return [key, values[i]];
     }));
-};
+}; 
 
 const navigateTo = url => {
     history.pushState(null, null, url);
@@ -65,8 +73,62 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             navigateTo(e.target.href);
         }
-    });
+    });    <script type="text/javascript" src="../api.js"></script>
 
     router();
+});*/
+
+
+const express = require('express');
+const bodyParser = require('body-parser');
+const app = express();
+const db = require('./queries');
+const port = 4056;
+const { expressCspHeader, INLINE, NONE, SELF } = require('express-csp-header');
+const cors = require('cors');
+//const path = require('path');
+
+
+app.use(expressCspHeader({
+    directives: {
+        'default-src': [SELF],
+        'script-src': [SELF, INLINE, 'somehost.com'],
+        'style-src': [SELF, 'mystyles.net'],
+        'img-src': ['data:', 'images.com'],
+        'worker-src': [NONE],
+        'block-all-mixed-content': true
+    }
+}));
+
+app.use(cors());
+
+app.use(bodyParser.json())
+app.use(
+  bodyParser.urlencoded({
+    extended: true,
+  })
+)
+app.use(express.static('frontend'));
+app.use(express.static('view'));
+
+app.get('/', (request, response) => {
+  //response.json({ info: 'Node.js, Express, and Postgres API' });
+  response.render('index.html');
 });
+
+/*app.get('/dashboard', (req, res) =>{
+    res.sendFile(path.join(__dirname + '/view/index.html'));
+    //res.send("this is working!");
+});*/
+
+
+app.get('/api/images', db.getImages);
+app.get('/api/image/:id', db.getImageById);
+app.post('/users', db.createUser);
+app.put('/users/:id', db.updateUser);
+app.delete('/users/:id', db.deleteUser);
+
+app.listen(port, () => {
+  console.log(`App is running on port ${port}.`);
+})
 

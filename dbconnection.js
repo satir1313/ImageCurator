@@ -20,18 +20,26 @@ const {Client} = require('pg');
        // }
 
         //connectToDB(){
-            //client.connect();
+            client.connect();
        // }
         
      //}
 
      //export default {setClientCredential, connect };
-    /*client.query('SELECT * FROM IMAGE', (err, res) =>{
+     var response = null;
+    client.query('SELECT * FROM IMAGE', (err, res) =>{
         if(!err){
             console.log(res.rows);
+            response = res.rows;
         }else{
             console.log(err.message);
         }
         client.end;
-    });*/
-    module.exports = client;
+    });
+
+    var text = null;
+    function hi(){
+        text = response;
+        return text;
+    }
+    module.exports = hi;

@@ -109,11 +109,14 @@ app.use(
     extended: true,
   })
 );
-app.use(express.static('frontend'));
+
+// let express to access to static folders to be served in the static files like index.html
+app.use(express.static('static'));
 app.use(express.static('view'));
+app.use(express.static('public'));
+app.use('/css', express.static(__dirname + '/node_modules/bootstrap/dist/css')); // redirect CSS bootstrap
 
 app.get('/', (request, response) => {
-  //response.json({ info: 'Node.js, Express, and Postgres API' });
   response.render('index.html');
 });
 

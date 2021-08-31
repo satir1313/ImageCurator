@@ -83,7 +83,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const db = require('./queries');
-const port = 4056;
+const port = process.env.PORT || 4056;
 const { expressCspHeader, INLINE, NONE, SELF } = require('express-csp-header');
 const cors = require('cors');
 //const path = require('path');
@@ -101,13 +101,14 @@ app.use(expressCspHeader({
 }));
 
 app.use(cors());
+app.use(bodyParser.urlencoded({ extended: false }));
 
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 app.use(
   bodyParser.urlencoded({
     extended: true,
   })
-)
+);
 app.use(express.static('frontend'));
 app.use(express.static('view'));
 
@@ -121,14 +122,18 @@ app.get('/', (request, response) => {
     //res.send("this is working!");
 });*/
 
+app.get('/api', (request, response) => {
+    response.json({ info: 'Node.js, Express, and Postgres API' });
+  });
 
 app.get('/api/images', db.getImages);
 app.get('/api/image/:id', db.getImageById);
+app.get('/api/users', db.getUsers);
+app.get('/api/user/:id', db.getUserById);
 app.post('/users', db.createUser);
 app.put('/users/:id', db.updateUser);
 app.delete('/users/:id', db.deleteUser);
 
 app.listen(port, () => {
   console.log(`App is running on port ${port}.`);
-})
-
+});

@@ -14,6 +14,7 @@ const passportJWT = require('passport-jwt');
 const JwtStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
 const knex = require('knex');
+const jwt = require('jsonwebtoken');
 const knexDB = knex({client: 'pg', connection: {host : 'localhost',
                                                 user : 'sha13',
                                                 password : '123456',
@@ -23,6 +24,7 @@ const knexDB = knex({client: 'pg', connection: {host : 'localhost',
 
 const bookshelf = require('bookshelf');
 const securePassword = require('bookshelf-secure-password');
+const { JsonWebTokenError } = require('jsonwebtoken');
 const bs = bookshelf(knexDB);
 bs.plugin(securePassword);
 
@@ -128,3 +130,28 @@ app.post('/signup', (req, res) =>{
     });
     curator.save().then(()=>{res.send('OK')});
 });
+
+
+app.post('/getToken', (req, res) =>{
+    console.log(req.body.email);
+    if(!req.body.email || !req.body.password){
+        return res.status(401).send('password failed');
+    }
+
+    User.forge({email: req.body.email}).fetch().then(result =>{
+        if(!result){
+            return res.status(401).send('user not found');
+        }
+        result.authenticate(req.body.password).then(user => {
+             const payload = {id: user.id};
+             const token = jwt.sign(payload, process.env.SECRET_OR_KEY);
+             res.send(token);
+         }).catch(err => {
+            return res.status(401).send({err: err});
+         });
+    });
+});
+
+app.get('/protected', passport.authenticate('jwt', {session: false, }),  (req, res) =>{
+    res.send("protected");
+})

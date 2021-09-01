@@ -1,26 +1,30 @@
-
+const dotenv = require('dotenv');
+dotenv.config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
- //const path = require('path');
 const db = require('./queries');
 const port = process.env.PORT || 4056;
 const { expressCspHeader, INLINE, NONE, SELF } = require('express-csp-header');
 const cors = require('cors');
-const dotenv = require('dotenv');
-dotenv.config();
 const passport = require('passport');
 const passportJWT = require('passport-jwt');
 const JwtStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
 const knex = require('knex');
 const jwt = require('jsonwebtoken');
-const knexDB = knex({client: 'pg', connection: {host : 'localhost',
-                                                user : 'sha13',
-                                                password : '123456',
-                                                database : 'shieldtec',
-                                                port: 5432 }
+const knexDB = knex({client: 'pg', connection: {
+    database: 'd9uj7lopimf0ls',
+    user:     'smvrnygrdfsrdt',
+    host: 'ec2-18-214-238-28.compute-1.amazonaws.com',
+    password: '37df29b180ddee63f855129c89d1546b3889f8602d2d6aa922482d024d4be0f4',
+    port: 5432,
+    ssl:{
+        rejectUnauthorized: false
+    }
+  }
 });
+
 
 const bookshelf = require('bookshelf');
 const securePassword = require('bookshelf-secure-password');
@@ -97,30 +101,12 @@ app.listen(port, () => {
   console.log(`App is running on port ${port}.`);
 });
 
-// login user
-app.get('/login', (req, res) => {
-    res.send('User Logged in successfully');
-  });
-
-app.post('/login', (req, res) =>{
-    if(!req.body.email || !req.body.password){
-        return res.status(401).send('no fields');
-    }
-    const user = new User({
-        email: req.body.email,
-        password: req.body.password
-    });
-    user.save().then(()=>{res.send('OK')});
-});
-
-
 // sign up user
 app.get('/siugnup', (req, res) => {
     res.send('User Logged in successfully');
   });
 
 app.post('/signup', (req, res) =>{
-    console.log(req.body.password);
     if(!req.body.email || !req.body.password){
         return res.status(401).send('fields empty');
     }
@@ -131,9 +117,12 @@ app.post('/signup', (req, res) =>{
     curator.save().then(()=>{res.send('OK')});
 });
 
+// login user
+app.get('/login', (req, res) => {
+    res.send('User Logged in successfully');
+  });
 
-app.post('/getToken', (req, res) =>{
-    console.log(req.body.email);
+app.post('/login', (req, res) =>{
     if(!req.body.email || !req.body.password){
         return res.status(401).send('password failed');
     }

@@ -8,7 +8,8 @@ module.exports = {
       host : 'localhost',
       user : 'sha13',
       password : '123456',
-      database : 'shieldtec'
+      database : 'shieldtec',
+      port: 5432
     }
   },
 

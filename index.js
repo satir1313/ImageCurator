@@ -1,83 +1,3 @@
-/*import Dashboard from "./views/Dashboard.js";
-import Settings from "./views/Settings.js";
-import Annotate from "./views/Annotate.js";
-import AnnotateView from "./views/AnnotateView.js";
-
-const db = require('./queries');
-
-// @ts-ignore
-//import { client } from '../../../node_modules/connection/index.js';
-//const client = require ("connection");
-
-//setClientCredential();
-//connect();
-//client.connect();
-
-app.get('/users', db.getUsers);
-app.get('/users/:id', db.getUserById);
-app.post('/users', db.createUser);
-app.put('/users/:id', db.updateUser);
-app.delete('/users/:id', db.deleteUser);
-
-const pathToRegex = path => new RegExp("^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$");
-
-const getParams = match => {
-    const values = match.result.slice(1);
-    const keys = Array.from(match.route.path.matchAll(/:(\w+)/g)).map(result => result[1]);
-
-    return Object.fromEntries(keys.map((key, i) => {
-        return [key, values[i]];
-    }));
-}; 
-
-const navigateTo = url => {
-    history.pushState(null, null, url);
-    router();
-};
-
-const router = async () => {
-    const routes = [
-        { path: "/", view: Dashboard },
-        { path: "/annotate", view: Annotate },
-        { path: "/annotate/:id", view: AnnotateView },
-        { path: "/settings", view: Settings }
-    ];
-
-    // Test each route for potential match
-    const potentialMatches = routes.map(route => {
-        return {
-            route: route,
-            result: location.pathname.match(pathToRegex(route.path))
-        };
-    });
-
-    let match = potentialMatches.find(potentialMatch => potentialMatch.result !== null);
-
-    if (!match) {
-        match = {
-            route: routes[0],
-            result: [location.pathname]
-        };
-    }
-
-    const view = new match.route.view(getParams(match));
-
-    document.querySelector("#app").innerHTML = await view.getHtml();
-};
-
-window.addEventListener("popstate", router);
-
-document.addEventListener("DOMContentLoaded", () => {
-    document.body.addEventListener("click", e => {
-        if (e.target.matches("[data-link]")) {
-            e.preventDefault();
-            navigateTo(e.target.href);
-        }
-    });    <script type="text/javascript" src="../api.js"></script>
-
-    router();
-});*/
-//const path = require('path');
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -97,7 +17,8 @@ const knex = require('knex');
 const knexDB = knex({client: 'pg', connection: {host : 'localhost',
                                                 user : 'sha13',
                                                 password : '123456',
-                                                database : 'shieldtec'}
+                                                database : 'shieldtec',
+                                                port: 5432 }
 });
 
 const bookshelf = require('bookshelf');
@@ -105,7 +26,7 @@ const securePassword = require('bookshelf-secure-password');
 const bs = bookshelf(knexDB);
 bs.plugin(securePassword);
 
-const user = bs.Model.extend({
+const User = bs.Model.extend({
     tableName: 'login_user',
     hasSecurePassword: true,
 });
@@ -197,12 +118,13 @@ app.get('/siugnup', (req, res) => {
   });
 
 app.post('/signup', (req, res) =>{
+    console.log(req.body.password);
     if(!req.body.email || !req.body.password){
-        return res.status(401).send('no fields');
+        return res.status(401).send('fields empty');
     }
-    const user = new User({
+    const curator = new User({
         email: req.body.email,
         password: req.body.password
     });
-    user.save().then(()=>{res.send('OK')});
+    curator.save().then(()=>{res.send('OK')});
 });

@@ -1,9 +1,8 @@
 body {
   margin: 0;
   color: #6a6f8c;
-  background: #caff85;
-  font: 600 16px/18px 'Open Sans', sans-serif;
-  background-image: url('/public/images/index.jpeg');
+  background: #dab618;
+  font: 600 16px/18px 'Open Sans', sans-serif
 }
 
 .login-box {
@@ -12,7 +11,6 @@ body {
   max-width: 525px;
   min-height: 670px;
   position: relative;
-  background: url(https://images.unsplash.com/photo-1507208773393-40d9fc670acf?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1268&q=80) no-repeat center;
   box-shadow: 0 12px 15px 0 rgba(0, 0, 0, .24), 0 17px 50px 0 rgba(0, 0, 0, .19)
 }
 

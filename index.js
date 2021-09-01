@@ -75,6 +75,7 @@ app.use(express.static('static'));
 app.use(express.static('view'));
 app.use(express.static('public'));
 app.use('/css', express.static(__dirname + '/node_modules/bootstrap/dist/css')); // redirect CSS bootstrap
+app.use('/dist', express.static(__dirname + '/node_modules/jquery/dist/')); // redirect CSS bootstrap
 
 app.get('/', (request, response) => {
   response.render('index.html');
@@ -141,6 +142,6 @@ app.post('/login', (req, res) =>{
     });
 });
 
-app.get('/protected', passport.authenticate('jwt', {session: false, }),  (req, res) =>{
+/*app.get('/protected', passport.authenticate('jwt', {session: false, }),  (req, res) =>{
     res.send("protected");
-})
+})*/

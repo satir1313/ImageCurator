@@ -13,6 +13,7 @@
   "author": "Sha Jalili",
   "license": "MIT",
   "dependencies": {
+    "alert": "^5.0.10",
     "bcrypt": "^5.0.1",
     "body-parser": "^1.19.0",
     "bookshelf": "^1.2.0",

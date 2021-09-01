@@ -7,28 +7,32 @@ const db = require('./queries');
 const port = process.env.PORT || 4056;
 const { expressCspHeader, INLINE, NONE, SELF } = require('express-csp-header');
 const cors = require('cors');
+const path = require('path');
 const passport = require('passport');
 const passportJWT = require('passport-jwt');
 const JwtStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
 const knex = require('knex');
 const jwt = require('jsonwebtoken');
-const knexDB = knex({client: 'pg', connection: {
-    database: 'd9uj7lopimf0ls',
-    user:     'smvrnygrdfsrdt',
-    host: 'ec2-18-214-238-28.compute-1.amazonaws.com',
-    password: '37df29b180ddee63f855129c89d1546b3889f8602d2d6aa922482d024d4be0f4',
-    port: 5432,
-    ssl:{
-        rejectUnauthorized: false
+const knexDB = knex({
+    client: 'pg', connection: {
+        database: 'd9uj7lopimf0ls',
+        user: 'smvrnygrdfsrdt',
+        host: 'ec2-18-214-238-28.compute-1.amazonaws.com',
+        password: '37df29b180ddee63f855129c89d1546b3889f8602d2d6aa922482d024d4be0f4',
+        port: 5432,
+        ssl: {
+            rejectUnauthorized: false
+        }
     }
-  }
 });
+const alert = require('alert');
 
 
 const bookshelf = require('bookshelf');
 const securePassword = require('bookshelf-secure-password');
 const { JsonWebTokenError } = require('jsonwebtoken');
+const { join } = require('path/posix');
 const bs = bookshelf(knexDB);
 bs.plugin(securePassword);
 
@@ -44,8 +48,8 @@ const ops = {
     secretOrKey: process.env.SECRET_OR_KEY
 }
 
-const strategy = new JwtStrategy(ops, (payload, next) =>{
-    const user = User.forge({id: payload.id}).fetch().then(res=>{
+const strategy = new JwtStrategy(ops, (payload, next) => {
+    const user = User.forge({ id: payload.id }).fetch().then(res => {
         next(null, res);
     });
 });
@@ -77,10 +81,14 @@ app.use(express.static('public'));
 app.use('/css', express.static(__dirname + '/node_modules/bootstrap/dist/css')); // redirect CSS bootstrap
 app.use('/dist', express.static(__dirname + '/node_modules/jquery/dist/')); // redirect CSS bootstrap
 
+
 app.get('/', (request, response) => {
-  response.render('index.html');
+    response.render('index.html');
 });
 
+app.get('/annotate', (req, res) => {
+    res.sendFile(path.join(__dirname + '/view/annotate.html'));
+});
 /*app.get('/dashboard', (req, res) =>{
     res.sendFile(path.join(__dirname + '/view/index.html'));
     //res.send("this is working!");
@@ -88,7 +96,7 @@ app.get('/', (request, response) => {
 
 app.get('/api', (request, response) => {
     response.json({ info: 'Node.js, Express, and Postgres API' });
-  });
+});
 
 app.get('/api/images', db.getImages);
 app.get('/api/image/:id', db.getImageById);
@@ -99,49 +107,57 @@ app.put('/users/:id', db.updateUser);
 app.delete('/users/:id', db.deleteUser);
 
 app.listen(port, () => {
-  console.log(`App is running on port ${port}.`);
+    console.log(`App is running on port ${port}.`);
 });
 
 // sign up user
 app.get('/siugnup', (req, res) => {
     res.send('User Logged in successfully');
-  });
+});
 
-app.post('/signup', (req, res) =>{
-    if(!req.body.email || !req.body.password){
-        return res.status(401).send('fields empty');
+app.post('/signup', (req, res) => {
+    if (!req.body.email || !req.body.password) {
+        return res.status(401).redirect('/signup');
     }
     const curator = new User({
         email: req.body.email,
         password: req.body.password
     });
-    curator.save().then(()=>{res.send('OK')});
+    //curator.save().then(()=>{res.send('OK')});
+    curator.save().then(() => {
+        res.redirect('/');
+    }).catch(err => {
+        alert(`${req.body.email} alreay exists!`);
+        res.redirect('/');
+    });
 });
 
 // login user
 app.get('/login', (req, res) => {
     res.send('User Logged in successfully');
-  });
+});
 
-app.post('/login', (req, res) =>{
-    if(!req.body.email || !req.body.password){
+app.post('/login', (req, res) => {
+    if (!req.body.email || !req.body.password) {
         return res.status(401).send('password failed');
     }
 
-    User.forge({email: req.body.email}).fetch().then(result =>{
-        if(!result){
+    User.forge({ email: req.body.email }).fetch().then(result => {
+        if (!result) {
             return res.status(401).send('user not found');
         }
         result.authenticate(req.body.password).then(user => {
-             const payload = {id: user.id};
-             const token = jwt.sign(payload, process.env.SECRET_OR_KEY);
-             res.send(token);
-         }).catch(err => {
-            return res.status(401).send({err: err});
-         });
+            const payload = { id: user.id };
+            const token = jwt.sign(payload, process.env.SECRET_OR_KEY);
+            //res.send(token);
+            res.redirect('/annotate');
+        }).catch(err => {
+            return res.status(401).send({ err: err });
+        });
     });
 });
 
 /*app.get('/protected', passport.authenticate('jwt', {session: false, }),  (req, res) =>{
     res.send("protected");
 })*/
+

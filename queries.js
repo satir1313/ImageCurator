@@ -23,7 +23,6 @@ const getImages = async (req, res) => {
       const client = await pool.connect();
       const result = await client.query('SELECT * FROM image ORDER BY image_id ASC');
       const results = { 'results': (result) ? result.rows : null};
-      //res.status(200).send(JSON.stringify(results));
       res.status(200).send(results);
       client.release();
     } catch (err) {
@@ -55,7 +54,6 @@ const getUsers = async (req, res) => {
     const client = await pool.connect();
     const result = await client.query('SELECT * FROM curator ORDER BY user_id ASC');
     const results = { 'results': (result) ? result.rows : null};
-    //res.status(200).send(JSON.stringify(results));
     res.status(200).send(results);
     client.release();
   } catch (err) {

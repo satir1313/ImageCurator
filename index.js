@@ -77,17 +77,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
     router();
 });*/
-
+//const path = require('path');
 
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
+ //const path = require('path');
 const db = require('./queries');
 const port = process.env.PORT || 4056;
 const { expressCspHeader, INLINE, NONE, SELF } = require('express-csp-header');
 const cors = require('cors');
-//const path = require('path');
+const dotenv = require('dotenv');
+dotenv.config();
+const passport = require('passport');
+const passportJWT = require('passport-jwt');
+const JwtStrategy = passportJWT.Strategy;
+const ExtractJWT = passportJWT.ExtractJwt;
+const knex = require('knex');
+const knexDB = knex({client: 'pg', connection: {host : 'localhost',
+                                                user : 'sha13',
+                                                password : '123456',
+                                                database : 'shieldtec'}
+});
 
+const bookshelf = require('bookshelf');
+const securePassword = require('bookshelf-secure-password');
+const bs = bookshelf(knexDB);
+bs.plugin(securePassword);
+
+const user = bs.Model.extend({
+    tableName: 'login_user',
+    hasSecurePassword: true,
+});
+
+
+
+const ops = {
+    jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+    secretOrKey: process.env.SECRET_OR_KEY
+}
+
+const strategy = new JwtStrategy(ops, (payload, next) =>{
+    const user = User.forge({id: payload.id}).fetch().then(res=>{
+        next(null, res);
+    });
+});
+
+passport.use(strategy);
+app.use(passport.initialize());
 
 app.use(expressCspHeader({
     directives: {
@@ -104,11 +141,7 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(bodyParser.json());
-app.use(
-  bodyParser.urlencoded({
-    extended: true,
-  })
-);
+
 
 // let express to access to static folders to be served in the static files like index.html
 app.use(express.static('static'));
@@ -139,4 +172,37 @@ app.delete('/users/:id', db.deleteUser);
 
 app.listen(port, () => {
   console.log(`App is running on port ${port}.`);
+});
+
+// login user
+app.get('/login', (req, res) => {
+    res.send('User Logged in successfully');
+  });
+
+app.post('/login', (req, res) =>{
+    if(!req.body.email || !req.body.password){
+        return res.status(401).send('no fields');
+    }
+    const user = new User({
+        email: req.body.email,
+        password: req.body.password
+    });
+    user.save().then(()=>{res.send('OK')});
+});
+
+
+// sign up user
+app.get('/siugnup', (req, res) => {
+    res.send('User Logged in successfully');
+  });
+
+app.post('/signup', (req, res) =>{
+    if(!req.body.email || !req.body.password){
+        return res.status(401).send('no fields');
+    }
+    const user = new User({
+        email: req.body.email,
+        password: req.body.password
+    });
+    user.save().then(()=>{res.send('OK')});
 });

@@ -68,7 +68,6 @@ const getUsers = async (req, res) => {
 const getUserById = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    console.log(id);
     const client = await pool.connect();
     const result = await client.query('SELECT * FROM curator WHERE user_id = $1', [id]);
     const results = { 'results': (result) ? result.rows : null};

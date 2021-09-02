@@ -62,7 +62,7 @@ app.use(expressCspHeader({
         'default-src': [SELF],
         'script-src': [SELF, INLINE, 'somehost.com'],
         'style-src': [SELF, 'mystyles.net'],
-        'img-src': ['data:', 'images.com'],
+        'img-src': [SELF],
         'worker-src': [NONE],
         'block-all-mixed-content': true
     }
@@ -78,6 +78,7 @@ app.use(bodyParser.json());
 app.use(express.static('static'));
 app.use(express.static('view'));
 app.use(express.static('public'));
+app.use(express.static('public/images'));
 app.use('/css', express.static(__dirname + '/node_modules/bootstrap/dist/css')); // redirect CSS bootstrap
 app.use('/dist', express.static(__dirname + '/node_modules/jquery/dist/')); // redirect CSS bootstrap
 

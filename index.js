@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const app = express();
 const db = require('./queries');
 const port = process.env.PORT || 4056;
-const { expressCspHeader, INLINE, NONE, SELF } = require('express-csp-header');
+const { expressCspHeader, INLINE, NONE, SELF, UNSAFE_INLINE, ALLOW_SCRIPTS, UNSAFE_URL, DATA } = require('express-csp-header');
 const cors = require('cors');
 const path = require('path');
 const passport = require('passport');
@@ -27,7 +27,7 @@ const knexDB = knex({
     }
 });
 const alert = require('alert');
-
+//require('../MyImageAnnotator-1/static/js/annotate');
 
 const bookshelf = require('bookshelf');
 const securePassword = require('bookshelf-secure-password');
@@ -60,13 +60,16 @@ app.use(passport.initialize());
 app.use(expressCspHeader({
     directives: {
         'default-src': [SELF],
-        'script-src': [SELF, INLINE, 'somehost.com'],
-        'style-src': [SELF, 'mystyles.net'],
-        'img-src': [SELF],
+        'script-src': [SELF, INLINE, UNSAFE_INLINE, ALLOW_SCRIPTS,'https://unpkg.com'],
+        'style-src': [SELF],
+        'img-src': [SELF, DATA],
         'worker-src': [NONE],
-        'block-all-mixed-content': true
+        'block-all-mixed-content': true,
+        'base-uri': [SELF, 'https://unpkg.com']
     }
 }));
+
+
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -80,13 +83,19 @@ app.use(express.static('view'));
 app.use(express.static('public'));
 app.use(express.static('public/images'));
 app.use('/css', express.static(__dirname + '/node_modules/bootstrap/dist/css')); // redirect CSS bootstrap
-app.use('/dist', express.static(__dirname + '/node_modules/jquery/dist/')); // redirect CSS bootstrap
+app.use('/js', express.static(__dirname + '/node_modules/bootstrap/dist/js')); // redirect js bootstrap
+app.use('/dist', express.static(__dirname + '/node_modules/jquery/dist/')); // redirect CSS jquery
+//app.use('/markerjs2' , express.static(__dirname + '/node_module/markerjs2/'));
+app.use(express.static('bundle'));
+app.use(express.static('dist'));
+
 
 
 app.get('/', (request, response) => {
     response.render('index.html');
 });
 
+// TODO remove to let loggedin user see the page
 app.get('/annotate', (req, res) => {
     res.sendFile(path.join(__dirname + '/view/annotate.html'));
 });

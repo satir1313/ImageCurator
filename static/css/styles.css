@@ -197,3 +197,10 @@ a {
 ::placeholder {
   color: #b3b3b3
 }
+
+.annotator{
+  position: relative; 
+  overflow: scroll; 
+  width: 1000px; 
+  height: 700px;
+}

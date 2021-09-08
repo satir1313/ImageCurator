@@ -10,6 +10,7 @@
     <script src="dist/jquery.min.js"></script>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <script src="/js/bootstrap.js"></script>
+    <script src="/js/bootstrap.bundle.js"></script>
     <link rel="stylesheet" href="/css/annotate.css">
 
 
@@ -19,7 +20,7 @@
 
     <script src="./annotatebundle.js"></script>
 
- 
+
 
 </head>
 
@@ -33,9 +34,20 @@
         });
     });
 
-    $(document).ready(function(){
-    $('[data-toggle="popover"]').popover();   
-});
+    $(document).ready(function () {
+        $('[data-toggle="popover"]').popover({
+            container: 'body',
+            title: 'Search',
+            html: true,
+            placement: 'bottom',
+            sanitize: false,
+            content: function () {
+                return $("#PopoverContent").html();
+            }
+        });
+    });
+
+
 </script>
 
 <script>
@@ -110,11 +122,13 @@
         <!--    Third row   -->
         <div class="row">
 
+
             <div class="list-group col-md-2 col-lg-2">
                 <a href="#" class="list-group-item list-group-item-action active"> item</a>
                 <a href="#" class="list-group-item list-group-item-action">Item</a>
                 <a href="#" class="list-group-item list-group-item-action disabled"> item</a>
             </div>
+
 
 
 
@@ -136,11 +150,14 @@
                         shit happens again
                     </canvas>
                 </div>-->
-                <a href="#" data-toggle="popover" title="Popover Header" data-content="Some content inside the popover">Toggle popover</a>
+                <a href="#" data-toggle="popover" title="Popover Header"
+                    data-content="Some content inside the popover" id="toggel-anno">Toggle popover</a>
+
                 <div id="image-container" class="annotator"></div>
                 <button id="zoomin">zoomin</button>
                 <button id="zoomout">zoomout</button>
                 <button id="reset">reset</button>
+
 
                 <!--<img class="img-fluid img-thumbnail draggable-annotation" src="/images/dog.jpg" 
                     alt="" id="firstImage" onclick="t()" >-->

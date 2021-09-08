@@ -215,12 +215,65 @@ function ev_canvas (ev) {
         })
     }
 
-    function onMouseUp(e){
+    function mm(e){
+        alert("in mm function");
         var rect = e.target.getBoundingClientRect();
         currentRegionCoordinates.x2  = e.clientX - rect.left; //x position within the element.
         currentRegionCoordinates.y2 = e.clientY - rect.top;  //y position within the element.
 
-        let popup = document.createElement('popup');
+        let popup = document.createElement('div');
+        popup.setAttribute("class", "model");
+        popup.setAttribute("id", "myPopup");
+
+        let popupmodelDialog = document.createElement('div');
+        popupmodelDialog.className += "model-dialog";
+        popupmodelDialog.id = "dialog";
+
+        let modelContent = document.createElement('div');
+        modelContent.className += "model-content";
+        modelContent.id = "content";
+
+        let modelheader = document.createElement('div');
+        modelheader.className += "model-header";
+        modelheader.id = "header";
+
+        let modelBody = document.createElement('div');
+        modelBody.className += "model-body";
+        modelBody.id = "body";
+        
+        let modelFooter = document.createElement('div');
+        modelFooter.className += "model-footer";
+        modelFooter.id = "footer";
+
+
+        let btnUpdate = document.createElement('input');
+        btnUpdate.className += "btn btn-primary";
+        btnUpdate.setAttribute("data-dissmis", "model");
+        btnUpdate.setAttribute("value", "Close");
+        modelFooter.append(btnUpdate);
+
+        let labelInput = document.createElement('input');
+        labelInput.className += "form-control";
+        modelBody.append(labelInput);
+
+        modelContent.append(modelheader);
+        modelContent.append(modelBody);
+        modelContent.append(modelFooter);
+
+        popupmodelDialog.append(modelContent);
+        popup.append(popupmodelDialog);
+
+        /*let a = document.createElement('a');
+        a.setAttribute("href", "#");
+        a.setAttribute("data-toggle","model");
+        a.setAttribute("data-target","#myModel");
+        a.setAttribute("value","annotate");*/
+
+        //jQuery($("#myPopup")).model("show");
+
+        //$('[id="myPopup"]').model("show");
+
+        document.getElementById("toggel-anno").appendChild(popup);
     }
 
 
@@ -323,10 +376,15 @@ function ev_canvas (ev) {
             if (onDrag) {
                 zoomOffset = 1;
                 onDrag = false;
+                mm(e);
+            }
+            else{
+                mm(e);
             }
         });
         canvasCtx.canvas.addEventListener('mousedown', onMouseDown);
         canvasCtx.canvas.addEventListener('mousemove', onMouseMove);
+        //canvasCtx.canvas.addEventListener('mouseup', onMouseUp);
     }
 
     function attachEvents(config) {

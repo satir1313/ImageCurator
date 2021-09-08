@@ -14,13 +14,16 @@ const JwtStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
 const knex = require('knex');
 const jwt = require('jsonwebtoken');
+var env = process.env.NODE_ENV || 'development';
+const config = require('./config.js')[env];
 const knexDB = knex({
-    client: 'pg', connection: {
-        database: 'd9uj7lopimf0ls',
-        user: 'smvrnygrdfsrdt',
-        host: 'ec2-18-214-238-28.compute-1.amazonaws.com',
-        password: '37df29b180ddee63f855129c89d1546b3889f8602d2d6aa922482d024d4be0f4',
-        port: 5432,
+    client: config.client, 
+    connection: {
+        database: config.database,
+        user: config.user,
+        host: config.host,
+        password: config.password,
+        port: config.port,
         ssl: {
             rejectUnauthorized: false
         }

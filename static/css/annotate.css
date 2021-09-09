@@ -25,3 +25,20 @@
     font-size: medium;
     font-weight: 600;
 }
+
+.outerDiv{
+    visibility:hidden;
+  }
+  
+.innerDiv{
+    visibility:hidden;
+}
+
+.outerDiv.active{
+    visibility:visible;
+}
+
+.innerDiv.active{
+    visibility:visible;
+}
+

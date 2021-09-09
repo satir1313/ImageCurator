@@ -8,57 +8,13 @@ const port = process.env.PORT || 4056;
 const { expressCspHeader, INLINE, NONE, SELF, UNSAFE_INLINE, ALLOW_SCRIPTS, UNSAFE_URL, DATA } = require('express-csp-header');
 const cors = require('cors');
 const path = require('path');
-const passport = require('passport');
-const passportJWT = require('passport-jwt');
-const JwtStrategy = passportJWT.Strategy;
-const ExtractJWT = passportJWT.ExtractJwt;
-const knex = require('knex');
-const jwt = require('jsonwebtoken');
-var env = process.env.NODE_ENV || 'development';
-const config = require('./config.js')[env];
-const knexDB = knex({
-    client: config.client, 
-    connection: {
-        database: config.database,
-        user: config.user,
-        host: config.host,
-        password: config.password,
-        port: config.port,
-        ssl: {
-            rejectUnauthorized: false
-        }
-    }
-});
+
 const alert = require('alert');
-//require('../MyImageAnnotator-1/static/js/annotate');
 
-const bookshelf = require('bookshelf');
-const securePassword = require('bookshelf-secure-password');
-const { JsonWebTokenError } = require('jsonwebtoken');
-const { join } = require('path/posix');
-const bs = bookshelf(knexDB);
-bs.plugin(securePassword);
-
-const User = bs.Model.extend({
-    tableName: 'login_user',
-    hasSecurePassword: true,
-});
+const lg = require('./login');
 
 
-
-const ops = {
-    jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
-    secretOrKey: process.env.SECRET_OR_KEY
-}
-
-const strategy = new JwtStrategy(ops, (payload, next) => {
-    const user = User.forge({ id: payload.id }).fetch().then(res => {
-        next(null, res);
-    });
-});
-
-passport.use(strategy);
-app.use(passport.initialize());
+app.use((lg.passport).initialize());
 
 app.use(expressCspHeader({
     directives: {
@@ -102,10 +58,7 @@ app.get('/', (request, response) => {
 app.get('/annotate', (req, res) => {
     res.sendFile(path.join(__dirname + '/view/annotate.html'));
 });
-/*app.get('/dashboard', (req, res) =>{
-    res.sendFile(path.join(__dirname + '/view/index.html'));
-    //res.send("this is working!");
-});*/
+
 
 app.get('/api', (request, response) => {
     response.json({ info: 'Node.js, Express, and Postgres API' });
@@ -132,17 +85,7 @@ app.post('/signup', (req, res) => {
     if (!req.body.email || !req.body.password) {
         return res.status(401).redirect('/signup');
     }
-    const curator = new User({
-        email: req.body.email,
-        password: req.body.password
-    });
-    //curator.save().then(()=>{res.send('OK')});
-    curator.save().then(() => {
-        res.redirect('/');
-    }).catch(err => {
-        alert(`${req.body.email} alreay exists!`);
-        res.redirect('/');
-    });
+    lg.signup(req, res);
 });
 
 // login user
@@ -155,19 +98,7 @@ app.post('/login', (req, res) => {
         return res.status(401).send('password failed');
     }
 
-    User.forge({ email: req.body.email }).fetch().then(result => {
-        if (!result) {
-            return res.status(401).send('user not found');
-        }
-        result.authenticate(req.body.password).then(user => {
-            const payload = { id: user.id };
-            const token = jwt.sign(payload, process.env.SECRET_OR_KEY);
-            //res.send(token);
-            res.redirect('/annotate');
-        }).catch(err => {
-            return res.status(401).send({ err: err });
-        });
-    });
+    lg.login(req, res);
 });
 
 /*app.get('/protected', passport.authenticate('jwt', {session: false, }),  (req, res) =>{

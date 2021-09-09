@@ -215,65 +215,71 @@ function ev_canvas (ev) {
         })
     }
 
-    function mm(e){
-        alert("in mm function");
+    function showPopup(e){
+
         var rect = e.target.getBoundingClientRect();
         currentRegionCoordinates.x2  = e.clientX - rect.left; //x position within the element.
         currentRegionCoordinates.y2 = e.clientY - rect.top;  //y position within the element.
 
+        // create pop up modal
         let popup = document.createElement('div');
-        popup.setAttribute("class", "model");
+        popup.setAttribute("class", "modal");
         popup.setAttribute("id", "myPopup");
+        popup.setAttribute("role", "dialog");
 
-        let popupmodelDialog = document.createElement('div');
-        popupmodelDialog.className += "model-dialog";
-        popupmodelDialog.id = "dialog";
+        let popupmodalDialog = document.createElement('div');
+        popupmodalDialog.setAttribute("class", "modal-dialog");
+        popupmodalDialog.id = "dialog";
 
-        let modelContent = document.createElement('div');
-        modelContent.className += "model-content";
-        modelContent.id = "content";
+        let modalContent = document.createElement('div');
+        modalContent.setAttribute("class", "modal-content");
+        modalContent.id = "content";
 
-        let modelheader = document.createElement('div');
-        modelheader.className += "model-header";
-        modelheader.id = "header";
+        let modalheader = document.createElement('div');
+        modalheader.setAttribute("class", "modal-header");
+        modalheader.id = "header";
 
-        let modelBody = document.createElement('div');
-        modelBody.className += "model-body";
-        modelBody.id = "body";
+        let modalBody = document.createElement('div');
+        modalBody.setAttribute("class", "modal-body");
+        modalBody.id = "body";
         
-        let modelFooter = document.createElement('div');
-        modelFooter.className += "model-footer";
-        modelFooter.id = "footer";
-
+        let modalFooter = document.createElement('div');
+        modalFooter.setAttribute("class",  "modal-footer");
+        modalFooter.id = "footer";
 
         let btnUpdate = document.createElement('input');
-        btnUpdate.className += "btn btn-primary";
-        btnUpdate.setAttribute("data-dissmis", "model");
-        btnUpdate.setAttribute("value", "Close");
-        modelFooter.append(btnUpdate);
+        btnUpdate.setAttribute("type", "button");
+        btnUpdate.setAttribute("class", "btn btn-primary");
+        btnUpdate.setAttribute("data-toggle" ,"modal");
+        btnUpdate.setAttribute("data-target" ,"#myPopup");
+        btnUpdate.setAttribute("data-dissmis", "modal");
+        btnUpdate.setAttribute("aria-label", "Close");
+        btnUpdate.setAttribute("id", "btnClose");
+        modalFooter.append(btnUpdate);
 
         let labelInput = document.createElement('input');
         labelInput.className += "form-control";
-        modelBody.append(labelInput);
+        modalBody.append(labelInput);
 
-        modelContent.append(modelheader);
-        modelContent.append(modelBody);
-        modelContent.append(modelFooter);
+        modalContent.appendc(modalheader);
+        modalContent.append(modalBody);
+        modalContent.append(modalFooter);
 
-        popupmodelDialog.append(modelContent);
-        popup.append(popupmodelDialog);
+        popupmodalDialog.append(modalContent);
+        popup.append(popupmodalDialog);
 
         /*let a = document.createElement('a');
         a.setAttribute("href", "#");
-        a.setAttribute("data-toggle","model");
-        a.setAttribute("data-target","#myModel");
+        a.setAttribute("data-toggle","modal");
+        a.setAttribute("data-target","#mymodal");
         a.setAttribute("value","annotate");*/
 
-        //jQuery($("#myPopup")).model("show");
+        //jQuery($("#myPopup")).modal("show");
 
-        //$('[id="myPopup"]').model("show");
+        //$('[id="myPopup"]').modal("show");
 
-        document.getElementById("toggel-anno").appendChild(popup);
+       window.appendChild(popup);
+
     }
 
 
@@ -376,10 +382,7 @@ function ev_canvas (ev) {
             if (onDrag) {
                 zoomOffset = 1;
                 onDrag = false;
-                mm(e);
-            }
-            else{
-                mm(e);
+                showPopup(e);
             }
         });
         canvasCtx.canvas.addEventListener('mousedown', onMouseDown);

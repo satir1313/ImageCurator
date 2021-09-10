@@ -12,6 +12,7 @@ const path = require('path');
 const alert = require('alert');
 
 const lg = require('./login');
+const register = require('./register');
 
 
 app.use((lg.passport).initialize());
@@ -85,7 +86,7 @@ app.post('/signup', (req, res) => {
     if (!req.body.email || !req.body.password) {
         return res.status(401).redirect('/signup');
     }
-    lg.signup(req, res);
+    register.signup(req, res);
 });
 
 // login user

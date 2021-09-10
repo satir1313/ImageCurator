@@ -49,21 +49,18 @@ const strategy = new JwtStrategy(ops, (payload, next) => {
 
 passport.use(strategy);
 
-function login(req, res){
-    User.forge({ email: req.body.email }).fetch().then(result => {
-        if (!result) {
-            return res.status(401).send('user not found');
-        }
-        result.authenticate(req.body.password).then(user => {
-            const payload = { id: user.id };
-            const token = jwt.sign(payload, process.env.SECRET_OR_KEY);
-            //res.send(token);
-            res.redirect('/annotate');
-        }).catch(err => {
-            return res.status(401).send({ err: err });
-        });
+function signup(req, res){
+    const curator = new User({
+        email: req.body.email,
+        password: req.body.password
+    });
+    //curator.save().then(()=>{res.send('OK')});
+    curator.save().then(() => {
+        res.redirect('/');
+    }).catch(err => {
+        alert(`${req.body.email} alreay exists!`);
+        res.redirect('/');
     });
 }
 
-
-module.exports = {passport, login } ;
+module.exports = {passport, signup } ;

@@ -3,10 +3,6 @@ dotenv.config();
 
 const configure = {
     development: {
-        //url to be used in link generation
-        //url: 'http://my.site.com',
-        //mongodb connection settings
-
         client: 'pg',
         database: 'shieldtec',
         user: 'sha13',
@@ -24,9 +20,6 @@ const configure = {
 
 },
     production: {
-        //url to be used in link generation
-        //url: 'http://my.site.com',
-        //mongodb connection settings
         client: 'pg',
         connection: {
             database: 'd9uj7lopimf0ls',

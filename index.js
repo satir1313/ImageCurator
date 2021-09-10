@@ -50,20 +50,7 @@ app.use(express.static('bundle'));
 app.use(express.static('dist'));
 
 
-
-app.get('/', (request, response) => {
-    response.render('index.html');
-});
-
-// TODO remove to let loggedin user see the page
-app.get('/annotate', (req, res) => {
-    res.sendFile(path.join(__dirname + '/view/annotate.html'));
-});
-
-
-app.get('/api', (request, response) => {
-    response.json({ info: 'Node.js, Express, and Postgres API' });
-});
+;
 
 app.get('/api/images', db.getImages);
 app.get('/api/image/:id', db.getImageById);
@@ -75,6 +62,24 @@ app.delete('/users/:id', db.deleteUser);
 
 app.listen(port, () => {
     console.log(`App is running on port ${port}.`);
+});
+
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname + '/view/index.html'));
+});
+app.get('/*', (req, res) => {
+    res.sendFile(path.join(__dirname + '/view/index.html'));
+});
+
+// TODO remove to let loggedin user see the page
+/*app.get('/annotate', (req, res) => {
+    res.sendFile(path.join(__dirname + '/view/annotate.html'));
+});*/
+
+
+app.get('/api', (req, res) => {
+    response.json({ info: 'Node.js, Express, and Postgres API' });
 });
 
 // sign up user

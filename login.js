@@ -26,8 +26,6 @@ const knexDB = knex({
 
 const bookshelf = require('bookshelf');
 const securePassword = require('bookshelf-secure-password');
-const { JsonWebTokenError } = require('jsonwebtoken');
-const { join } = require('path/posix');
 const bs = bookshelf(knexDB);
 bs.plugin(securePassword);
 

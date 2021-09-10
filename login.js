@@ -1,4 +1,6 @@
 const alert = require('alert');
+const dotenv = require('dotenv');
+dotenv.config();
 const passport = require('passport');
 const passportJWT = require('passport-jwt');
 const JwtStrategy = passportJWT.Strategy;
@@ -6,21 +8,25 @@ const ExtractJWT = passportJWT.ExtractJwt;
 const knex = require('knex');
 const jwt = require('jsonwebtoken');
 var env = process.env.NODE_ENV || 'development';
+alert(env);
+const configure = require('./config.js')[env];
+//const configi = confi.getConfig;
 
-const config = require('./config.js')[env];
+alert(configure.host);
 const knexDB = knex({
-    client: config.client, 
+    client: configure.client, 
     connection: {
-        database: config.database,
-        user: config.user,
-        host: config.host,
-        password: config.password,
-        port: config.port,
+        database: configure.database, 
+        user: configure.user,
+        host: configure.host,
+        password: configure.password,
+        port: configure.port,
         ssl: {
             rejectUnauthorized: false
         }
     }
 });
+
 
 const bookshelf = require('bookshelf');
 const securePassword = require('bookshelf-secure-password');

@@ -1,26 +1,28 @@
-var config = {
+const dotenv = require('dotenv');
+dotenv.config();
+
+const configure = {
     development: {
         //url to be used in link generation
         //url: 'http://my.site.com',
         //mongodb connection settings
 
         client: 'pg',
-        connection: {
-            database: 'shieldtec',
-            user: 'sha13',
-            host: 'localhost',
-            password: 'ShieldTec2021',
-            port: 5432,
-            ssl: {
-                rejectUnauthorized: false
-            }
+        database: 'shieldtec',
+        user: 'sha13',
+        host: 'localhost',
+        password: '123456',
+        port: 5432,
+        ssl: {
+            rejectUnauthorized: false
         },
-        //server details
-        server: {
-            host: '127.0.0.1',
-            port: '3422'
-        }
-    },
+    //server details
+    server: {
+        host: '127.0.0.1',
+        port: '3422'
+    }
+
+},
     production: {
         //url to be used in link generation
         //url: 'http://my.site.com',
@@ -43,4 +45,5 @@ var config = {
         }
     }
 };
-module.exports = config;
+
+module.exports = configure;

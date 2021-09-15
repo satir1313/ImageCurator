@@ -30,10 +30,7 @@ const { expressCspHeader, INLINE, NONE, SELF, UNSAFE_INLINE, ALLOW_SCRIPTS, UNSA
 const cors = require('cors');
 const path = require('path');
 const dbClient = require('./dbconnection');
-
 const alert = require('alert');
-
-//const User = require('./model/user');
 const bookshelf = require('bookshelf');
 const securePassword = require('bookshelf-secure-password');
 const bs = bookshelf(knexDB);
@@ -44,17 +41,9 @@ const User = bs.Model.extend({
     hasSecurePassword: true,
 });
 
-
-
-
-
-const lg = require('./login');
 const { response } = require('express');
-//const register = require('./register');
 
 dbClient.connect;
-
-//app.use((lg.passport).initialize());
 
 app.use(expressCspHeader({
     directives: {
@@ -84,7 +73,6 @@ app.use(express.static('public/images'));
 app.use('/css', express.static(__dirname + '/node_modules/bootstrap/dist/css')); // redirect CSS bootstrap
 app.use('/js', express.static(__dirname + '/node_modules/bootstrap/dist/js')); // redirect js bootstrap
 app.use('/dist', express.static(__dirname + '/node_modules/jquery/dist/')); // redirect CSS jquery
-//app.use('/markerjs2' , express.static(__dirname + '/node_module/markerjs2/'));
 app.use(express.static('bundle'));
 app.use(express.static('dist'));
 //app.use(favicon(path.join(__dirname,'/public/images/favicon.ico')));

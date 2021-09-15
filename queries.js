@@ -1,31 +1,56 @@
 const Pool = require('pg').Pool;
-
+const express = require('express');
 const bodyParser = require('body-parser');
-
+const appAPI = express();
+const alert = require('alert');
 //const connectionString = `postgresql://smvrnygrdfsrdt:37df29b180ddee63f855129c89d1546b3889f8602d2d6aa922482d024d4be0f4@ec2-18-214-238-28.compute-1.amazonaws.com:5432/d9uj7lopimf0ls`;
 
 const connectionString = process.env.CONNECTION_STRING;
 
 const pool = new Pool({
-    connectionString: connectionString,
-    ssl: {
-        rejectUnauthorized: false,
-    },
+  connectionString: connectionString,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
+
+const port = process.env.PORT || process.env.API_PORT;
+
+appAPI.listen(port, () => {
+  console.log(`App is running on port ${port}.`);
+});
+
+
+
+const getData = async (req, res) => {
+  try {
+    const client = await pool.connect();
+    const result = await client.query('SELECT * FROM login_user U, image I;');
+    const results = { 'results': (result) ? result.rows : null };
+    res.status(200).send(results);
+    client.release();
+  } catch (err) {
+    console.error(err);
+    res.send("Error " + err);
+  }
+}
+
+appAPI.get('/apidata', getData);
+
 
 // return all images in the database
 const getImages = async (req, res) => {
-    try {
-      const client = await pool.connect();
-      const result = await client.query('SELECT * FROM image ORDER BY image_id ASC');
-      const results = { 'results': (result) ? result.rows : null};
-      res.status(200).send(results);
-      client.release();
-    } catch (err) {
-      console.error(err);
-      res.send("Error " + err);
-    }
+  try {
+    const client = await pool.connect();
+    const result = await client.query('SELECT * FROM image ORDER BY image_id ASC');
+    const results = { 'results': (result) ? result.rows : null };
+    res.status(200).send(results);
+    client.release();
+  } catch (err) {
+    console.error(err);
+    res.send("Error " + err);
   }
+}
 
 //return image by it's image id
 const getImageById = async (req, res) => {
@@ -34,7 +59,7 @@ const getImageById = async (req, res) => {
     console.log(id);
     const client = await pool.connect();
     const result = await client.query('SELECT * FROM image WHERE image_id = $1', [id]);
-    const results = { 'results': (result) ? result.rows : null};
+    const results = { 'results': (result) ? result.rows : null };
     res.status(200).send(results);
     client.release();
   } catch (err) {
@@ -48,8 +73,8 @@ const getImageById = async (req, res) => {
 const getUsers = async (req, res) => {
   try {
     const client = await pool.connect();
-    const result = await client.query('SELECT * FROM curator ORDER BY user_id ASC');
-    const results = { 'results': (result) ? result.rows : null};
+    const result = await client.query('SELECT * FROM login_user ORDER BY id ASC');
+    const results = { 'results': (result) ? result.rows : null };
     res.status(200).send(results);
     client.release();
   } catch (err) {
@@ -63,8 +88,8 @@ const getUserById = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const client = await pool.connect();
-    const result = await client.query('SELECT * FROM curator WHERE user_id = $1', [id]);
-    const results = { 'results': (result) ? result.rows : null};
+    const result = await client.query('SELECT * FROM login_user WHERE id = $1', [id]);
+    const results = { 'results': (result) ? result.rows : null };
     res.status(200).send(results);
     client.release();
   } catch (err) {

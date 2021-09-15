@@ -1,15 +1,11 @@
 const Pool = require('pg').Pool;
-/*const pool = new Pool({
-    host:"localhost",
-    port: 5432,
-    user: 'sha13',
-    password: "ShieldTec2021",
-    database: "shieldtec"
-})*/
 
 const bodyParser = require('body-parser');
 
-const connectionString = `postgresql://smvrnygrdfsrdt:37df29b180ddee63f855129c89d1546b3889f8602d2d6aa922482d024d4be0f4@ec2-18-214-238-28.compute-1.amazonaws.com:5432/d9uj7lopimf0ls`;
+//const connectionString = `postgresql://smvrnygrdfsrdt:37df29b180ddee63f855129c89d1546b3889f8602d2d6aa922482d024d4be0f4@ec2-18-214-238-28.compute-1.amazonaws.com:5432/d9uj7lopimf0ls`;
+
+const connectionString = process.env.CONNECTION_STRING;
+
 const pool = new Pool({
     connectionString: connectionString,
     ssl: {

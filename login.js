@@ -10,9 +10,9 @@ const jwt = require('jsonwebtoken');
 var env = process.env.NODE_ENV || 'development';
 const configure = require('./config.js')[env];
 const knexDB = knex({
-    client: configure.client, 
+    client: configure.client,
     connection: {
-        database: configure.database, 
+        database: configure.database,
         user: configure.user,
         host: configure.host,
         password: configure.password,
@@ -47,7 +47,12 @@ const strategy = new JwtStrategy(ops, (payload, next) => {
 
 passport.use(strategy);
 
-function login(req, res){
+
+function login(req, res, next) {
+    if (!req.body.email || !req.body.password) {
+        return res.status(401).send('password failed');
+    }
+    alert("in post");
     User.forge({ email: req.body.email }).fetch().then(result => {
         if (!result) {
             return res.status(401).send('user not found');
@@ -55,13 +60,14 @@ function login(req, res){
         result.authenticate(req.body.password).then(user => {
             const payload = { id: user.id };
             const token = jwt.sign(payload, process.env.SECRET_OR_KEY);
-            //res.send(token);
-            res.redirect('/annotate');
+
+            //res.header("Authorization", token).sendFile(path.join(__dirname + '/view/annotate.html'));
+            //res.headers("Authorization", token).send({token: token});
+            
         }).catch(err => {
             return res.status(401).send({ err: err });
         });
     });
 }
 
-
-module.exports = {passport, login } ;
+    module.exports = { passport, login };

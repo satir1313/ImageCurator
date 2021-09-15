@@ -1,45 +1,23 @@
-const {Client} = require('pg');
-//import pkg from 'pg';
-//const {Client} = pkg;
+const { Client } = require('pg');
+const config = require('./config');
 
-//const client = new Client();
-
-     //export default  class DBConnection extends Client{
-
-            
-        //client.connect();
-
-        //setClientCredential(){
-            const client =  new Client({
-                host:"localhost",
-                port: 5432,
-                user: 'sha13',
-                password: "ShieldTec2021",
-                database: "shieldtec"
-            });
-       // }
-
-        //connectToDB(){
-            client.connect();
-       // }
-        
-     //}
-
-     //export default {setClientCredential, connect };
-     var response = null;
-    client.query('SELECT * FROM IMAGE', (err, res) =>{
-        if(!err){
-            console.log(res.rows);
-            response = res.rows;
-        }else{
-            console.log(err.message);
+function connect(){
+    const client = new Client({
+        connection: {
+            database: configure.database, 
+            user: configure.user,
+            host: configure.host,
+            password: configure.password,
+            port: configure.port,
+            ssl: {
+                rejectUnauthorized: false
+            }
         }
-        client.end;
     });
+    client.connect();
+}
 
-    var text = null;
-    function hi(){
-        text = response;
-        return text;
-    }
-    module.exports = hi;
+
+
+
+module.exports = {connect};

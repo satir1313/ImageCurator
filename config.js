@@ -15,7 +15,7 @@ const configure = {
     //server details
     server: {
         host: '127.0.0.1',
-        port: '3422'
+        port: process.env.APP_PORT
     }
 
 },

@@ -110,17 +110,29 @@ const createUser = (request, response) => {
 }
 
 const updateUser = (request, response) => {
-  const id = parseInt(request.params.id)
-  const { name, email } = request.body
+  const id = parseInt(request.params.id);
+  const { name, email, login_time } = request.body;
 
   pool.query(
-    'UPDATE users SET name = $1, email = $2 WHERE id = $3',
-    [name, email, id],
+    'UPDATE users SET name = $1, email = $2, login_time=$3 WHERE id = $4',
+    [name, email, login_time, id],
     (error, results) => {
       if (error) {
         throw error;
       }
       response.status(200).send(`User modified with ID: ${id}`)
+    }
+  )
+}
+
+const updateUserByID = (email ,time, id) => {
+  pool.query(
+    'UPDATE login_user SET email = $1, login_time=$2 WHERE id = $3',
+    [email, time, id],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
     }
   )
 }
@@ -143,5 +155,6 @@ module.exports = {
   updateUser,
   deleteUser,
   getUsers,
-  getUserById
+  getUserById,
+  updateUserByID
 }

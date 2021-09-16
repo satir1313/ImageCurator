@@ -105,11 +105,33 @@ app.get('/siugnup', (req, res) => {
     res.send('User Logged in successfully');
 });
 
+const ops = {
+    jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+    secretOrKey: process.env.SECRET_OR_KEY
+}
+
+const strategy = new JwtStrategy(ops, (payload, next) => {
+    const user = User.forge({ id: payload.id }).fetch().then(res => {
+        next(null, res);
+    });
+});
+
 app.post('/signup', (req, res) => {
     if (!req.body.email || !req.body.password) {
         return res.status(401).redirect('/signup');
     }
-    register.signup(req, res);
+    const curator = new User({
+        email: req.body.email,
+        password: req.body.password,
+        login_time: new Date().toISOString()
+    });
+    //curator.save().then(()=>{res.send('OK')});
+    curator.save().then(() => {
+        res.redirect('/');
+    }).catch(err => {
+        alert(`${req.body.email} alreay exists!`);
+        res.redirect('/');
+    });
 });
 
 
@@ -125,6 +147,8 @@ app.post('/login', (req, res, next) => {
         result.authenticate(req.body.password).then(user => {
             const payload = { id: user.id };
             const token = jwt.sign(payload, process.env.SECRET_OR_KEY);
+            const login_time = new Date().toISOString();
+            db.updateUserByID(req.body.email, login_time, user.id);
             res.append('setTimeout', 1200);
             res.header("Authorization", token).sendFile(path.join(__dirname + '/view/annotate.html'));
 

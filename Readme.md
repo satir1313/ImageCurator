@@ -1,9 +1,9 @@
 # ***********  Image Annoatator  *********** #
+
 Image annoatator appliocation is a web base application that provide a user friendly user interface for end user to annotate images and store them in the databse.
-
 # How to run Image Annotator
-1- clone to Bitbucket Repository in following link: git clone https://Shahabj13@bitbucket.org/Shahabj13/machine-learning-curator.git
 
+1- clone to Bitbucket Repository in following link: git clone https://Shahabj13@bitbucket.org/Shahabj13/machine-learning-curator.git
 
 2- If using VS code, open terminal (ctrl+shift+`)
 

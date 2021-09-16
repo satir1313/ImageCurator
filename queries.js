@@ -98,7 +98,6 @@ const getUserById = async (req, res) => {
   }
 }
 
-
 const createUser = (request, response) => {
   const { name, email } = request.body;
 

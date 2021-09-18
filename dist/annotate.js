@@ -446,3 +446,8 @@ function start() {
         resetId: "reset"
     });
 }
+
+function setImageFromML(path){
+    var element = document.getElementById('image_annotate');
+    element.setAttribute('src', path);
+}

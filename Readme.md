@@ -28,5 +28,10 @@ Gateway API runs simultaneously with UI on localhost:4057. in the address bar of
 /users
 /user/is ** id of user in the database eg. 1 **
 
-
 # Connection to ML server and Image server for Object Detection tool
+
+To connect to Machine Learning server use the following addresses:
+
+/ml_connection: Returns a guild to options provided by ML server
+/ml_connction/status: Returns status of ML in Json format
+/ml_connction/progress: Returns the status of learning progress

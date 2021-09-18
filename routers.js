@@ -54,7 +54,7 @@ dbClient.connect;
     console.log('Time: ', Date.now());
     next();
   });*/
-  
+
 router.use(expressCspHeader({
     directives: {
         'default-src': [SELF],
@@ -67,7 +67,7 @@ router.use(expressCspHeader({
     }
 }));
 
-  
+
 
 router.use(cors());
 router.use(bodyParser.urlencoded({ extended: false }));
@@ -97,7 +97,7 @@ router.put('/users/:id', db.updateUser);
 router.delete('/users/:id', db.deleteUser);
 
 //router.listen(port, () => {
-    //console.log(`router is running on port ${port}.`);
+//console.log(`router is running on port ${port}.`);
 //});
 
 
@@ -170,12 +170,10 @@ router.post('/login', (req, res, next) => {
 
 const authenticateJWT = (req, res, next) => {
     alert("in auth");
-    console.log(req);
     let token = req.header('Authorization');
-    console.log(token);
     if (token) {
         const token = authHeader.split(' ')[1];
-        console.log(token);
+
         jwt.verify(token, process.env.SECRET_OR_KEY, (err, user) => {
             if (err) {
                 return res.sendStatus(403);
@@ -201,7 +199,7 @@ router.get('/annotate', authenticateJWT, (req, res) => {
 router.get('/login', authenticateJWT, (req, res) => {
     alert(" in get logged in in in in ");
     const token = req.headers.token;
-    console.log("************************************" + token);
+
     if (!token) {
         let content =
             `<body style="margin: 0px;">
@@ -227,9 +225,9 @@ router.get('/login', authenticateJWT, (req, res) => {
     }
 });
 
-router.get('/upload', imageServer.uploadimage); 
+router.get('/upload', imageServer.uploadimage);
 
-router.get('/ml_connection', (req, res)=>{
+router.get('/ml_connection', (req, res) => {
     res.send(`<h2> To check status of ML <h2>
                 <h3> /ml_connection/status <h3>
                 <br />
@@ -239,16 +237,30 @@ router.get('/ml_connection', (req, res)=>{
             `);
 });
 
-router.get('/ml_connection/status', mlServer.getStatus, (req, res)=>{
+router.get('/ml_connection/status', mlServer.getStatus, (req, res) => {
     res.send(`<h2> Connected To ML Server <h2>
                 the body of message is ${req.body}
             `);
 });
 
-router.get('/ml_connection/progress', mlServer.getProgress, (req, res)=>{
+router.get('/ml_connection/progress', mlServer.getProgress, (req, res) => {
     res.send(`<h2> Connected To ML Server <h2>
                 the body of message is ${req.body}
             `);
+});
+
+router.get('/ml_connection/training', mlServer.trainingTest, mlServer.startTraining, (req, res) => {
+
+    // Convert base64 to buffer => <Buffer ff d8 ff db 00 43 00 ...
+    const buffer = Buffer.from(req.body, "base64");
+
+    const image = fs.writeFileSync('./public/images/new.jpg', buffer);
+    
+    router.use(express.static('./public/images/new.jpg'));
+
+    var imgPath = './public/images/new.jpg'
+
+    res.send('<h2> Connected To ML Server <h2> <p> Image successfully downloded from ML server</p>');
 });
 
 

@@ -36,35 +36,27 @@ const getProgress = function (req, res, next) {
     });
 }
 
-const trainingTest = function (req, res, next){
-
-    // create base64 image for testing
-    var imageAsBase64 = fs.readFileSync('./public/images/dog.jpg', 'base64');
-    var output = `{ "${imageAsBase64} "}`;
-    var jsonToUpload = JSON.stringify(output, null, "\t");
-
-    req.body = jsonToUpload;
-
-    next();
-}
-
-
 const startTraining = function (req, res, next) {
 
+    var imageAsBase64 = fs.readFileSync('./public/images/ball.png', 'base64');
+    var output = {image: imageAsBase64 };
+    var jsonToUpload = JSON.stringify(output);
+
+
     const options = {
+        url: 'http://127.0.0.1:9000/detect',
         method: 'POST',
-        uri: 'http://localhost:9000',
-        body: req.body,
-        json: true,
+        body: jsonToUpload,
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': '*/*',
+            'Connection': 'keep-alive',
+            'json': true,
         }
     }
 
-    request('http://localhost:9000/progress', options,function (reqe, response) {
-        if (response.statusCode == 200) {
-            req.body = response.body;
-        }
+    request(options, function (reqe, response) {
+        req.body = response.body;
         next();
     });
 
@@ -72,4 +64,4 @@ const startTraining = function (req, res, next) {
 
 
 
-module.exports = { getStatus, getProgress, startTraining, trainingTest};
+module.exports = { getStatus, getProgress, startTraining };

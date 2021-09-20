@@ -23,7 +23,6 @@ const uploadImage = (req, res, next) => {
         }
     }
 
-
     request(options, function (err, response, body) {
         req.body = response.body;
         next();

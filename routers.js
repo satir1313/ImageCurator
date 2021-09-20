@@ -225,7 +225,6 @@ router.get('/login', authenticateJWT, (req, res) => {
     }
 });
 
-router.get('/upload', imageServer.uploadimage);
 
 router.get('/ml_connection', (req, res) => {
     res.send(`<h2> To check status of ML <h2>
@@ -255,17 +254,29 @@ router.get('/ml_connection/training', mlServer.trainingTest, mlServer.startTrain
     const buffer = Buffer.from(req.body, "base64");
 
     const image = fs.writeFileSync('./public/images/new.jpg', buffer);
-    
+
     router.use(express.static('./public/images/new.jpg'));
 
-    var imgPath = './public/images/new.jpg'
+    var imgPath = './public/images/Image.jpg'
 
-    res.send('<h2> Connected To ML Server <h2> <p> Image successfully downloded from ML server</p>');
+    res.send(`<h2> Connected To ML Server <h2> <p>${req.body}</p>`);
+});
+
+
+router.get('/image_server/upload', imageServer.uploadImage, (req, res) => {
+
+    res.send(`<h2> Connected To ML Server <h2>  <p>${req.body}</p>`);
+});
+
+router.get('/image_server/get_image', imageServer.getImage, (req, res) => {
+
+    res.send(`<h2> Connected To ML Server <h2>  <p>${req.body}</p>`);
 });
 
 
 /*router.get('/protected', passport.authenticate('jwt', {session: false, }),  (req, res) =>{
     res.send("protected");
 })*/
+
 
 module.exports = router;

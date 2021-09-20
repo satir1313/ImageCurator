@@ -1,8 +1,5 @@
-const mlApp = require('./index');
 const bodyParser = require('body-parser');
 const request = require('request');
-const express = require('express');
-const app = express();
 var fs = require('fs');
 
 /*mlApp.listen(4058, () => {

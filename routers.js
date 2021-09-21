@@ -248,7 +248,7 @@ router.get('/ml_connection/progress', mlServer.getProgress, (req, res) => {
             `);
 });
 
-router.get('/ml_connection/training', mlServer.startTraining, (req, res) => {
+router.get('/ml_connection/detect', mlServer.startTraining, (req, res) => {
 
     // Convert base64 to buffer => <Buffer ff d8 ff db 00 43 00 ...
     const buffer = Buffer.from(req.body, "base64");

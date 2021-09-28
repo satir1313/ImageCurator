@@ -21,6 +21,9 @@ const getStatus = function (req, res, next) {
         if (response.statusCode == 200) {
             req.body = response.body;
         }
+        else{
+            req.send('<h2> Connection cannot be stablished<h2>');
+        }
         next();
     });
 

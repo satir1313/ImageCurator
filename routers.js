@@ -85,6 +85,7 @@ router.use('/js', express.static(__dirname + '/node_modules/bootstrap/dist/js'))
 router.use('/dist', express.static(__dirname + '/node_modules/jquery/dist/')); // redirect CSS jquery
 router.use(express.static('bundle'));
 router.use(express.static('dist'));
+router.use(express.static('src'));
 //router.use(favicon(path.join(__dirname,'/public/images/favicon.ico')));
 
 

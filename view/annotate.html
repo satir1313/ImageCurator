@@ -1,98 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy"
-        content="default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'">
-    <title>Image Annotator</title>
-
-
-    <script src="dist/jquery.min.js"></script>
+    <title>Simple Image Annotation Tool</title>
+    <link rel="stylesheet" href="/css/annotate.css" />
+    <script src="https://kit.fontawesome.com/9c77ccc682.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
-    <script src="/js/bootstrap.js"></script>
-    <script src="/js/bootstrap.bundle.js"></script>
-    <link rel="stylesheet" href="/css/annotate.css">
-
-
-    <!-- DragDropAnnotate -->
-    <link rel="stylesheet" href="./src/dragDropAnnotate.css" type="text/css" />
-    <script src="./src/dragDropAnnotate.js"></script>
-
-    <script src="./annotatebundle.js"></script>
-
-
-
 </head>
 
 
-
-<script>
-    $(document).ready(function () {
-        $('#firstImage').click(function () {
-            var fImg = $('#firstImage').attr('src');
-            $('#imgToAnnotate').attr('src', fImg);
-        });
-    });
-
-    $(document).ready(function () {
-        $('[data-toggle="popover"]').popover({
-            container: 'body',
-            title: 'Search',
-            html: true,
-            placement: 'bottom',
-            sanitize: false,
-            content: function () {
-                return $("#PopoverContent").html();
-            }
-        });
-    });
+<script src="dist/jquery.min.js"></script>
 
 
-</script>
+<body>
 
-
-<script>
-    function test() {
-
-        const inputElement = document.getElementById("btnUpload");
-        inputElement.addEventListener("click", handleFiles, false);
-        function handleFiles() {
-            alert('working');
-            const fileList = this.files; /* now I can work with the file list */
-            console.log(files);
-        }
-
-    }
-</script>
-
-<script>
-    $(document).ready(function () {
-
-        $('#image-container').click(function (e) {
-            mouseX = e.pageX;
-            mouseY = e.pageY;
-
-            var bodyTop = document.documentElement.scrollTop + document.body.scrollTop;
-
-            //window.outerWidth is not working in IE
-            var windowWidth = $(window).outerWidth();
-            var windowHeight = $(window).outerHeight();
-
-            //if(mouseY-bodyTop+150 > windowHeight)
-
-
-            //set the position first. remove the position attr in css   
-            //$('div').css({position:"absolute",top:popupTop,left:popupLeft});
-            //$('div').show();
-            $('.outerDiv').addClass('active');
-            $('.innerDiv').addClass('active');
-        });
-    });
-</script>
-
-<body onload="start()">
     <div class="container-fluid">
         <div class="form-group">
             <div class="card">
@@ -123,144 +44,68 @@
             </div>
         </div>
     </div>
+    <div id="tool">
+        <div id="toolbar">
 
-
-    <!--    Second row   -->
-    <form method="POST" id="uploadForm" enctype="multipart/form-data" action="/annotate" onsubmit="test()">
-        <div class="form-group">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 col-lg-4 col-sm-4 uploadFile">
-                            <input type="file" name="filePicker" id="filePicker" placeholder="choose an image"
-                                class="custom-file-input" multiple="multiple" accept="image/png, image/gif, image/jpeg">
-                            <button type="submit" class="btn btn-primary" id="btnUpload">Upload</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </form>
-
-    <!--    Third row   -->
-    <div class="form-group">
-        <div class="card">
-            <div class="card-body">
-                <div class="row">
-                    <div class="list-group col-md-2 col-lg-2">
-                        <a href="#" class="list-group-item list-group-item-action active"> item</a>
-                        <a href="#" class="list-group-item list-group-item-action">Item</a>
-                        <a href="#" class="list-group-item list-group-item-action disabled"> item</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-        <div class="col-md-8 col-lg-6" name="image_annotate" id="image_annotate">
-            <!--<iframe class="col-lg-12 col-md-12 col-sm-12" frameborder="0" scrolling="yes" width="600" height="400"
-                    src=" " id="imgToAnnotate" name="imgToAnnotate"></iframe>-->
-
-
-            <!--<a href="#" data-toggle="popover" title="Popover Header"
-                    data-content="" id="toggel-anno">Toggle popover</a>-->
-            <div class="outerDiv" id="outerDiv">
-                <div class="innerDiv">
-                    <h2>Pop-Up</h2>
-                    <p> pop up can be used to input label for an image</p>
-                    <!--popup's close button-->
-                    <button class="close">Close</button>
-                </div>
+            <div class="toolbar-buttons">
+                <input type="radio" id="button-box" name="tool-select" value="box">
+                <label for="button-box" id="box-label"><i class="fas fa-vector-square"></i>BOX</label>
             </div>
 
+            <div class="toolbar-buttons">
+                <input type="radio" id="button-polygon" name="tool-select" value="polygon">
+                <label for="button-polygon" id="polygon-label"><i class="fas fa-draw-polygon"></i>POLYGON</label>
+            </div>
 
-            <div id="image-container" class="annotator"></div>
-            <button id="zoomin">zoomin</button>
-            <button id="zoomout">zoomout</button>
-            <button id="reset">reset</button>
+            <div class="toolbar-buttons">
+                <input type="radio" id="button-select" name="tool-select" value="select">
+                <label for="button-select" id="select-label"><i class="fas fa-arrows-alt"></i>SELECT</label>
+            </div>
 
-
-            <!--<img class="img-fluid img-thumbnail draggable-annotation" src="/images/dog.jpg" 
-                    alt="" id="firstImage" onclick="t()" >-->
+            <div class="toolbar-buttons">
+                <button type="button" id="clear-button" onclick="clearPolygons()"><i
+                        class="fas fa-trash-alt"></i>CLEAR</button>
+            </div>
 
 
         </div>
 
+        <div>
+            <select name="animals" id="animals">
+                <option value="dog">Dog</option>
+                <option value="cat">Cat</option>
+            </select>
+        </div>
+
+        <div id="canvas">
+            <canvas id="canvas-draw" width="1000" height="500"></canvas>
+
+        </div>
+
+        <div id="ouput">
+            <button type="button" id="output-button" onclick="output()">OUTPUT</button>
+        </div>
 
 
-        <div class="container col-md-3 col-lg-3" name="image_gallery" id="image_gallery">
-
+        <form action="/ml_connection/training" method="POST">
             <div>
-                <a href="#" class="d-block mb-4 h-100">
-                    <img class="img-fluid img-thumbnail" src="/images/dog.jpg" alt="" id="firstImage">
-                </a>
+                <input type="file" name="filePicker" id="filePicker" placeholder="choose an image"
+                class="custom-file-input" multiple="multiple" accept="image/png, image/gif, image/jpeg">
+                <input type="submit" class="button" value="Send Image" id="btnSend" />
             </div>
+        </form>
 
-            <div>
-                <a href="#" class="d-block mb-4 h-100">
-                    <img class="img-fluid img-thumbnail" src="/images/index.jpeg" alt="">
-                </a>
-            </div>
 
-            <!--<div>
-                    <a href="#" class="d-block mb-4 h-100">
-                        <img class="img-fluid img-thumbnail" src="/images/1.jpg" alt="">
-               <script>
-    /*$(document).ready(function () {
-        $('canvas').drawImage({
-            source: 'images/dog.jpg',
-            x: 150, y: 150
-        });
-
-    });*/
-
-</script>     </a>
-                </div>
-                <div>
-                    <a href="#" class="d-block mb-4 h-100">
-                        <img class="img-fluid img-thumbnail" src="/images/5.jpg" alt="">
-                    </a>
-                </div>
-                <div>
-                    <a href="#" class="d-block mb-4 h-100">
-                        <img class="img-fluid img-thumbnail" src="/images/6.jpg" alt="">
-                    </a>
-                </div>
-                <div>
-                    <a href="#" class="d-block mb-4 h-100">
-                        <img class="img-fluid img-thumbnail" src="/images/2.jpeg" alt="">
-                    </a>
-                </div>
-                <div>
-                    <a href="#" class="d-block mb-4 h-100">
-                        <img class="img-fluid img-thumbnail" src="
-                            alt="">
-                    </a>
-                </div>
-                <div>
-                    <a href="#" class="d-block mb-4 h-100">
-                        <img class="img-fluid img-thumbnail" src="""
-                            alt="">
-                    </a>
-                </div>
-                <div>
-                    <a href="#" class="d-block mb-4 h-100">
-                        <img class="img-fluid img-thumbnail" src=""
-                            alt="">
-                    </a>
-                </div>-->
-
+        <div id="ouput">
+            <input type="submit" class="button" value="Send Image" id="btnSend" />
         </div>
 
+        <div id="results">
+            <p></p>
+        </div>
 
     </div>
 
-    <!--       Forth row    -->
-    <div class="row">
-        <div class="col-md-8">third raw</div>
-    </div>
-
-    </div>
     <script src="./annotate.js"></script>
 
 </body>

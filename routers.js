@@ -79,13 +79,13 @@ router.use(bodyParser.json());
 router.use(express.static('static'));
 router.use(express.static('view'));
 router.use(express.static('public'));
-router.use(express.static('public/images'));
+router.use('/images', express.static('public/images'));
 router.use('/css', express.static(__dirname + '/node_modules/bootstrap/dist/css')); // redirect CSS bootstrap
 router.use('/js', express.static(__dirname + '/node_modules/bootstrap/dist/js')); // redirect js bootstrap
 router.use('/dist', express.static(__dirname + '/node_modules/jquery/dist/')); // redirect CSS jquery
 router.use(express.static('bundle'));
 router.use(express.static('dist'));
-router.use(express.static('src'));
+router.use('/Annotate_lib', express.static(__dirname + '/Annotate_lib'));
 //router.use(favicon(path.join(__dirname,'/public/images/favicon.ico')));
 
 
@@ -262,6 +262,16 @@ router.get('/ml_connection/detect', mlServer.startTraining, (req, res) => {
 
     res.send(`<h2> Connected To ML Server <h2> <p>${req.body}</p>`);
 });
+
+
+router.post('/ml_connection/training', imageServer.uploadImage, mlServer.training, (req, res) =>{
+    res.send(`<h2> Connected To ML Server <h2>
+    the body of message is ${req.body}`);
+});
+
+
+
+
 
 
 router.get('/image_server/upload', imageServer.uploadImage, (req, res) => {

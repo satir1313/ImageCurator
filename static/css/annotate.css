@@ -1,59 +1,119 @@
-#image_gallery{
-    background-color: black;
-    margin-left: 10px;
-    margin-top: 2.5%;
-    padding: 1%;
-}
-
-.img-thumbnail{
-    width: 100%;
+html, body {
     height: 100%;
-    object-fit: cover;
+    width: 100%;
+    margin: 0;
+    background: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+	overflow:scroll;
 }
 
-#image_annotate{
-    object-fit: cover;
+#tool {
+    height: auto;
+    width: auto;
+    margin: 0 auto;
+	margin-top: 0px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
 }
 
-.uploadFile{
-    margin: 3%;
-    margin-left: 1%;
+#toolbar {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0px;
+    margin: 10px;
+    color: #E1E1E1;
 }
 
-.navbar-light{
-    background-color: rgb(169, 213, 241);
-    font-size: medium;
-    font-weight: 600;
+.toolbar-buttons {
+    user-select: none;
+    margin: 0px 10px;
+	background-color: #466269;
 }
 
-.outerDiv{
-    visibility:hidden;
+label {
+    display: inline-flex;
+    width: 150px;
+    height: 35px;
+    border: solid 2px gray;
+    align-items: center;
+    justify-content: center;
+}
+
+label:hover {
+    cursor: pointer;
+}
+
+#clear-button {
+    cursor: pointer;
+    border: solid 2px gray;
+    background-color: #70280b;
+    color: #E1E1E1;
+    padding: 10px 50px;
+    user-select: none;
+    outline: none;
+}
+
+i {
+	margin-right: 10px;
+}
+
+#output-button {
+    cursor: pointer;
+    border: solid 2px gray;
+    background-color: #c9d1d1;
+    color: black;
+	margin-top: 20px;
+    padding: 10px 10px;
+    user-select: none;
+    outline: none;
+}
+
+#output-button:hover {
+    border-color: white;
+}
+
+#output-button:active {
+    background-color: white;
+    color: black;
+    transition-duration: 0.1s;
+}
+
+input[type="radio"] {
+    display: none;
+}
+
+input[type="radio"]:checked + label {
+    border: solid 2px white;
   }
-  
-.innerDiv{
-    visibility:hidden;
+
+#animals {
+	font-size: 16px;
+	margin-bottom: 20px;
 }
 
-.outerDiv.active{
-    visibility:visible;
+#canvas {
+	display: flex;
+    justify-content: center;
+	background-color: #F1F1F1;
+	width: 100%;
+	height: auto;
+	flex-direction: row;
 }
 
-.innerDiv.active{
-    visibility:visible;
+#annotations {
+	margin-left: 20px;
+	height: auto;
 }
 
-.annotate_canvas{
-    width: 100%;
-    height: 100%;
-    position: relative;
+#results {
+	text-align: center;
+	color: #E1E1E1;
+	overflow: auto;
+	margin-bottom: 50px;
+	margin-top: 20px;
+	width: 800px;
+	max-height: 200px;
+	color: black;
 }
-
-.img_canvas{
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    left: 0;
-    right: 0;
-}
-
-

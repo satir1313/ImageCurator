@@ -6,9 +6,10 @@ const qs = require('querystring');
 
 const uploadImage = (req, res, next) => {
 
-    var imageAsBase64 = fs.readFileSync('./public/images/2.jpeg', 'base64');
+    console.log('./public/images/' + req.body.filePicker);
+    var imageAsBase64 = fs.readFileSync('./public/images/' + req.body.filePicker, 'base64');
 
-    var output = { filename: "2.jpeg", image: imageAsBase64 };
+    var output = { filename: req.body.filePicker, image: imageAsBase64 };
     var jsonToUpload = JSON.stringify(output);
 
     const options = {
@@ -24,18 +25,22 @@ const uploadImage = (req, res, next) => {
     }
 
     request(options, function (err, response, body) {
-        req.body = response.body;
+        //req.body = response.body;
+        console.log(response.body);
         next();
     });
 
 }
 
-const getImage = function (req, res){
-    request('http://localhost:8000/test.jpg', function (reqe, response, next) {
+const getImage = function (req, res, next){
+    request('http://127.0.0.1:8000/images/2.jpeg', function (reqe, response) {
         if (response.statusCode == 200) {
             req.body = response.body;
             next();
+        }else{
+            next();
         }
+
     });
 }
 

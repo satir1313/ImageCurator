@@ -1,448 +1,517 @@
+var img = new Image();
+img.src = '/images/1.jpg';
+// var imgName = img.src.replace(/^.*[\\\/]/, '');
 
-
-function t() {
-  var x = document.getElementById("firstImage").getAttribute('src');
-  console.log(x);
-}
-
-/*function d(){
-  var ctx = document.getElementById("canvasdraw").getContext("2d");
-  var img = new Image;
-
-      ctx.drawImage(img, 20,20);
-      alert('the image is drawn');
-
-  img.src = URL.createObjectURL('/images/dog.jpg');
-}*/
-
-
-
-/* var canvas = document.getElementById("layer1");
-var context = canvas.getContext("2d");
-var img = new Image;
-img.src = "/images/dog.jpg";
-context.drawImage(img, 10, 10, 600, 400);
-init();
-
-
-
-function init () {
-
-var canvas = document.getElementById("layer1");
-// The pencil tool instance.
-tool = new tool_pencil();
-
-// Attach the mousedown, mousemove and mouseup event listeners.
-canvas.addEventListener('mousedown', ev_canvas, false);
-canvas.addEventListener('mousemove', ev_canvas, false);
-canvas.addEventListener('mouseup',   ev_canvas, false);
-
-}
-
-// This painting tool works like a drawing pencil which tracks the mouse 
-// movements.
-function tool_pencil () {
-var canvas = document.getElementById("layer1");
-var context = canvas.getContext("2d");
-var tool = this;
-this.started = false;
-
-// This is called when you start holding down the mouse button.
-// This starts the pencil drawing.
-this.mousedown = function (ev) {
-   context.beginPath();
-   context.moveTo(ev._x, ev._y);
-   tool.started = true;
+// Establish the canvas object when image is loaded
+img.onload = function () {
+	var canvasEl = document.getElementById('canvas-draw');
+    canvasEl.addEventListener("mousemove", mouseMoveHandler, false);
+    canvasEl.addEventListener("mousedown", mouseDownHandler, false);
+    canvasEl.addEventListener("click", mouseClickHandler, false);
+	canvasEl.addEventListener("mousewheel", mouseWheelHandler, {passive: true}); // Support Chromium
+	canvasEl.addEventListener("DOMMouseScroll", mouseWheelHandler, false); // Support Firefox
+    document.addEventListener("mouseup", mouseUpHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+    canvas.ctx = canvasEl.getContext('2d');
+    canvas.drawCanvas();
 };
 
-// This function is called every time you move the mouse. Obviously, it only 
-// draws if the tool.started state is set to true (when you are holding down 
-// the mouse button).
-this.mousemove = function (ev) {
- if (tool.started) {
-   context.lineTo(ev._x, ev._y);
-   context.stroke();
- }
+// Status of the canvas
+var canvasMode = Object.freeze({
+    cNone:      "none",
+    cDragPt:    "drag",
+    cSelPt:     "select",
+	cDrawBox:	"drawBox",
+	cDrawPoly: 	"drawPoly"
+});
+
+// Canvas object
+var canvas = {
+    polygons: [],
+	hoverPoly: undefined, 	// polygons[] index of polygon mouse is hovering over
+	hoverPt: undefined, 	// polygons[hoverPoly] index of point mouse is hovering over
+	selPoly: undefined, 	// polygons[] index of polygon mouse has clicked on
+    selPt: undefined, 		// polygons[selPoly] index of point mouse has clicked on
+    ctx: undefined, 		// 2D context of canvas element
+	zoom: 1, 				// The amount of zoom currently used in the canvas
+	imgRatio: undefined, 	// The value required to adjust the image to fit the canvas
+    mode: canvasMode.cNone,
+	
+	// Wipe and redraw the image, polygons, and points on the canvas
+    drawCanvas: function() {
+        if (this.ctx !== undefined) {
+			
+			var canvasH = this.getHeight();
+			var canvasW = this.getWidth();
+			
+			// Clear canvas
+            this.ctx.clearRect(0, 0, canvasH, canvasW);
+			
+			// If imgRatio hasn't been set, set it to the value required to fit the image in the canvas
+			if (this.imgRatio === undefined) {
+				if (img.width / img.height > canvasW / canvasH){
+					this.imgRatio = canvasW / img.width;
+				}
+				else {
+					this.imgRatio = canvasH / img.height;
+				}
+			}
+			
+			// Set the canvas size according to the adjusted image size
+			this.ctx.canvas.height = img.height * this.imgRatio;
+			this.ctx.canvas.width = img.width * this.imgRatio;
+			
+			// Scale the canvas according to the current zoom level
+			this.ctx.scale(this.zoom,this.zoom);
+			
+			// Draw the image on the canvas according to the adjusted dimensions for fitting it in the canvas
+			this.ctx.drawImage(img, 0, 0, img.width * this.imgRatio, img.height * this.imgRatio);
+			
+			// Draw the grey highlighted circle on the point the mouse is hovering over (if there is one)
+            if (this.hoverPoly !== undefined && this.hoverPt !== undefined) {
+                drawPt(this.polygons[this.hoverPoly][this.hoverPt], this.ctx, adjustSizeForZoom(5, this.zoom), "gray");
+            }
+			
+			// Draw the blue highlighted circle on the point the mouse has clicked on (if there is one)
+            if ((this.selPoly !== undefined && this.selPt !== undefined) && (this.selPt !== this.hoverPt || this.selPoly !== this.hoverPoly)) {
+                drawPt(this.polygons[this.selPoly][this.selPt], this.ctx, adjustSizeForZoom(5, this.zoom), "blue");
+            }
+			
+			// Draw the polygons on the canvas in black, adjusted to the current zoom level
+			for (var i=0; i < this.polygons.length; ++i) {
+				drawPolygon(this.polygons[i].slice(1), this.ctx, "black", this.zoom);;
+			}    
+        }
+    },
+	
+	// Calculated the amount of zoom for the canvas according to the user's scrollwheel
+	zoomCanvas: function(e) {
+		if (!e.deltaY) e.preventDefault() // Prevent scrolling entire webpage if on Firefox
+		
+		// Adjust mouse coordinates according to canvas page offset
+		var mouseX = e.clientX - this.ctx.canvas.offsetLeft;
+		var mouseY = e.clientY - this.ctx.canvas.offsetTop;
+		
+		// Support different browsers and normalise scrollwheel to single step
+		var zoomDelta = (e.deltaY < 0 || e.detail < 0 || e.wheelDelta > 0) ? 1 : -1;
+		
+		var newZoom = Math.exp(zoomDelta * 0.05);
+		this.zoom = this.zoom * newZoom;
+		
+		// Prevent the user from scrolling too far in or out
+		if (!(this.zoom > 32) && !(this.zoom < 1)) {
+			this.drawCanvas();
+		}
+		else if (this.zoom > 32) {
+			this.zoom = 32;
+		}
+		else this.zoom = 1;
+	},
+	
+	// Wipe all polygons from the canvas
+	clearPolygons: function() {
+		this.polygons = [];
+		this.drawCanvas();
+	},
+	
+	// Get the height of the canvas in pixels
+	getHeight: function() {
+		return this.ctx.canvas.height;
+	},
+	
+	// Get the width of the canvas in pixels
+	getWidth: function() {
+		return this.ctx.canvas.width;
+	},
+	
+	// Get the array of polygons
+	getPolygons: function() {
+		return this.polygons;
+	},
+	
+	// Start drawing a polygon
+	startDrawing: function(x, y, label, type) {
+		
+		// Set the canvas mode
+		this.mode = (type == "box") ? canvasMode.cDrawBox : canvasMode.cDrawPoly;
+		
+		// Adjust mouse coordinates according to canvas page offset and zoom
+        x = (x - this.ctx.canvas.offsetLeft) / this.zoom;
+        y = (y - this.ctx.canvas.offsetTop) / this.zoom;
+		
+		this.polygons.push([label, [x, y]]);
+	},
+	
+	// Draw a rectangular bounding box
+	drawBox: function(x, y, done) {
+		
+		var canvasW = this.getWidth();
+		var canvasH = this.getHeight();
+		
+		// Adjust mouse coordinates according to canvas page offset and zoom
+		x = (x - this.ctx.canvas.offsetLeft) / this.zoom;
+		y = (y - this.ctx.canvas.offsetTop) / this.zoom;
+		
+		// Get index of current polygon
+		idx = this.polygons.length - 1;
+		
+		// Calculate the x,y for the remaining three points
+		point3 = { x: 0, y: 0 };
+        point3.x = checkBounds(x, canvasW, 0);
+        point3.y = checkBounds(y, canvasH, 0);
+		point2 = { x: 0, y: 0 };
+        point2.x = point3.x;
+        point2.y = this.polygons[idx][1][1];
+		point4 = { x: 0, y: 0 };
+        point4.x = this.polygons[idx][1][0];
+        point4.y = point3.y;
+		
+		// Push the remaining three points to the polygons array
+		this.polygons[idx].push([point2.x, point2.y]);
+		this.polygons[idx].push([point3.x, point3.y]);
+		this.polygons[idx].push([point4.x, point4.y]);
+		
+		// Draw the bounding box, and remove the three points if the user is still drawing
+		this.drawCanvas();
+		if (done) {
+			this.mode = canvasMode.cNone;
+		}
+		else {
+			this.polygons[idx].pop();
+			this.polygons[idx].pop();
+			this.polygons[idx].pop();
+		}
+	},
+	
+	// Draw a polygonal bounding box
+	drawPoly: function(x, y) {
+		
+		// Adjust mouse coordinates according to canvas page offset and zoom
+		x = (x - this.ctx.canvas.offsetLeft) / this.zoom;
+        y = (y - this.ctx.canvas.offsetTop) / this.zoom;
+		
+		// Get index of current polygon
+		idx = this.polygons.length - 1;
+		
+		// Push the bounding box to the polygons array and draw it on the canvas
+		this.polygons[idx].push([x, y]);
+		this.drawCanvas();
+	},
+	
+	// Finish drawing a polygon
+	finishPoly: function() {
+		this.mode = canvasMode.cNone;
+	},
+
+	// Determine which polygon point the mouse is hovering over, if any
+    findHoverPt: function(x, y) {
+		
+		// Transform mouse coordinates according to canvas zoom
+		x = x/this.zoom;
+		y = y/this.zoom;
+		
+        var newHoverPt = undefined;
+		var newHoverPoly = undefined;
+		var pointFound = false;
+		
+		// While a point has not been found, continue searching through the polygons and points
+		for (var i=0; i < this.polygons.length && !pointFound; ++i) {
+			for (var j=1; j < this.polygons[i].length; ++j) {
+				if (dist(this.polygons[i][j], [x, y]) <= 9) {
+					newHoverPoly = i;
+					newHoverPt = j;
+					pointFound = true;
+					break;
+				}
+			}
+		}
+		
+		// If the found point is not already hovered over, highlight it on the canvas
+        if (newHoverPoly !== this.hoverPoly || newHoverPt !== this.hoverPt) {
+            this.hoverPt = newHoverPt;
+			this.hoverPoly = newHoverPoly;
+            this.drawCanvas();
+        }
+    },
+	
+	// Drag a polygon point
+    moveSelPt: function(x, y) {
+		
+		// Transform mouse coordinates according to canvas zoom
+		x = x/this.zoom;
+		y = y/this.zoom;
+		
+		// If a point is selected, move it to the new location
+        if (this.selPt !== undefined) {
+            this.polygons[this.selPoly][this.selPt][0] = x;
+            this.polygons[this.selPoly][this.selPt][1] = y;
+            this.drawCanvas();
+        }
+    },
+	
+	// Start dragging a polygon point
+    beginDragPt: function() {
+        if (this.hoverPt !== undefined) {
+            this.mode = canvasMode.cDragPt;
+			this.selPoly = this.hoverPoly;
+            this.selPt = this.hoverPt;
+        }
+    },
+
+	// Finish dragging a polygon point
+    endDragPt: function() {
+        if (this.mode === canvasMode.cDragPt) {
+            this.mode = canvasMode.cNone;
+			this.selPoly = undefined;
+            this.selPt = undefined;
+        }
+    },
+	
+	// Select a polygon point and highlight it on the canvas
+    selectPt: function() {
+        this.mode = (this.hoverPoly !== undefined && this.hoverPt !== undefined) ? canvasMode.cSelPt : canvasMode.cNone;
+		this.selPoly = this.hoverPoly;
+        this.selPt = this.hoverPt;
+        this.drawCanvas();
+    },
+	
+	// Delete a polygon point
+    deletePt: function() {
+        if (this.mode === canvasMode.cSelPt && this.selPoly !== undefined && this.selPt !== undefined) {
+            this.polygons[this.selPoly].splice(this.selPt, 1);
+
+            if (this.hoverPt === this.selPt) {
+                this.hoverPoly = undefined;
+				this.hoverPt = undefined;
+            } else if (this.hoverPt > this.selPt) {
+                --this.hoverPt;
+            }
+			this.selPoly = undefined;
+            this.selPt = undefined;
+            this.drawCanvas();
+        }
+    },
 };
 
-// This is called when you release the mouse button.
-this.mouseup = function (ev) {
- if (tool.started) {
-   tool.mousemove(ev);
-   tool.started = false;
- }
-};
+// Normalise y coordinate (0-1)
+function normaliseHeight(y) {
+	return (y / canvas.getHeight());
 }
 
-// The general-purpose event handler. This function just determines the mouse 
-// position relative to the canvas element.
-function ev_canvas (ev) {
-if (ev.layerX || ev.layerX == 0) { // Firefox
- ev._x = ev.layerX;
- ev._y = ev.layerY;
-} else if (ev.offsetX || ev.offsetX == 0) { // Opera
- ev._x = ev.offsetX;
- ev._y = ev.offsetY;
+// Normalise x coordinate (0-1)
+function normaliseWidth(x) {
+	return (x / canvas.getWidth());
 }
 
-// Call the event handler of the tool.
-var func = tool[ev.type];
-if (func) {
- func(ev);
+// Output the normalised polygons ### CURRENTLY GOES TO HTML ELEMENT, SHOULD GO TO DATABASE
+function output() {
+    var original = Array.from(canvas.getPolygons());
+	var output = []
+	
+	// Normalise each polygon point and add it to a new array
+	for (var i=0; i < original.length; ++i) {
+		output.push([original[i][0]]);
+		for (var j=1; j < original[i].length; ++j) {
+			output[i].push([]);
+			console.log(output);
+			output[i][j].push(normaliseWidth(original[i][j][0]));
+			output[i][j].push(normaliseHeight(original[i][j][1]));
+		}
+	}
+	// Output array should look like [['label1', [x,y], [x,y], [x,y]], ['label2', [x,y], [x,y], [x,y]]]
+	
+	// Output the normalised polygons to an HTML element
+	output = output.join(' ');
+    document.getElementById("results").innerHTML = output;
 }
-}*/
 
-"use strict";
-
-(function (window) {
-  // data structures
-  let onDrag = false;
-  let listRegionCoordinates = [];
-  let canvasCtx = null;
-  let zoomScale = 1;
-  let zoomOffset = 1;
-  let currentRegionCoordinates = null;
-  let RegionCoordinates = function (x1, x2, y1, y2) {
-      this.x1 = x1;
-      this.x2 = x2;
-      this.y1 = y1;
-      this.y2 = y2;
-  }
-  let Annotater = function (config) {
-      this.config = config;
-      if (!setup(config)) {
-          console.log("No annotations setup");
-      }
-  }
-  function zoom(imageId, zoomincrement) {
-      zoomScale = zoomScale * zoomincrement;
-      zoomOffset = zoomOffset * zoomincrement;
-      let img_ele = document.getElementById(imageId);
-      let pre_width = img_ele.getBoundingClientRect().width, pre_height = img_ele.getBoundingClientRect().height;
-      img_ele.style.width = (pre_width * zoomincrement) + 'px';
-      img_ele.style.height = (pre_height * zoomincrement) + 'px';
-      // update canvas width and height and scale existing annotations
-      canvasCtx.canvas.height = pre_height * zoomincrement;
-      canvasCtx.canvas.width = pre_width * zoomincrement;
-      if (currentRegionCoordinates) {
-          canvasCtx.clearRect(0, 0, canvasCtx.canvas.width, canvasCtx.canvas.height);
-          canvasCtx.strokeStyle = "yellow";
-          draw_rect(
-              getInitPoint(currentRegionCoordinates).x * zoomOffset,
-              getInitPoint(currentRegionCoordinates).y * zoomOffset,
-              Math.abs(currentRegionCoordinates.x1 - currentRegionCoordinates.x2) * zoomOffset,
-              Math.abs(currentRegionCoordinates.y1 - currentRegionCoordinates.y2) * zoomOffset
-          );
-      }
-      if (listRegionCoordinates) {
-          drawExistingRegions();
-      }
-      img_ele = null;
-  }
-
-  function resetSize(imageId) {
-      let img_ele = document.getElementById(imageId);
-      img_ele.style.width = "100%";
-      img_ele.style.height = "100%";
-      // reset canvas width and height
-      img_ele.style.left = 0;
-      img_ele.style.top = 0;
-      img_ele = null;
-  }
-
-  function onMouseDown(e) {
-      currentRegionCoordinates = new RegionCoordinates();
-      //currentRegionCoordinates.x1 = e.clientX + e.currentTarget.parentElement.scrollLeft;
-      //currentRegionCoordinates.y1 = e.clientY + e.currentTarget.parentElement.scrollTop;
-      var rect = e.target.getBoundingClientRect();
-      currentRegionCoordinates.x1  = e.clientX - rect.left; //x position within the element.
-      currentRegionCoordinates.y1 = e.clientY - rect.top;  //y position within the element.
-      onDrag = true;
-  }
-
-  function onMouseMove(e) {
-      if (!onDrag) {
-          return;
-      }
-      //currentRegionCoordinates.x2 = e.clientX + e.currentTarget.parentElement.scrollLeft;
-      //currentRegionCoordinates.y2 = e.clientY + e.currentTarget.parentElement.scrollTop;
-      var rect = e.target.getBoundingClientRect();
-      currentRegionCoordinates.x2  = e.clientX - rect.left; //x position within the element.
-      currentRegionCoordinates.y2 = e.clientY - rect.top;  //y position within the element.
-
-      let reg_x = currentRegionCoordinates.x2;
-      let reg_y = currentRegionCoordinates.y2;
-      if (currentRegionCoordinates.x1 < e.offsetX) {
-          reg_x = currentRegionCoordinates.x1;
-          if (currentRegionCoordinates.y1 < currentRegionCoordinates.y2) {
-              reg_y = currentRegionCoordinates.y1;
-          } else {
-              reg_y = currentRegionCoordinates.y2;
-          }
-      } else {
-          reg_x = currentRegionCoordinates.x2;
-          if (currentRegionCoordinates.y1 < currentRegionCoordinates.y2) {
-              reg_y = currentRegionCoordinates.y1;
-          } else {
-              reg_y = currentRegionCoordinates.y2;
-          }
-      }
-      // clear intermediate rectangles
-      canvasCtx.clearRect(0, 0, canvasCtx.canvas.width, canvasCtx.canvas.height);
-      if (listRegionCoordinates.length > 0) {
-          drawExistingRegions();
-      }
-      canvasCtx.strokeStyle = "yellow";
-      console.log(e.offsetX);
-      console.log(currentRegionCoordinates);
-      draw_rect(
-          reg_x,
-          reg_y,
-          Math.abs(currentRegionCoordinates.x1 - currentRegionCoordinates.x2),
-          Math.abs(currentRegionCoordinates.y1 - currentRegionCoordinates.y2)
-      );
-  }
-
-  function drawExistingRegions() {
-      canvasCtx.strokeStyle = "red";
-      listRegionCoordinates.forEach(item => {
-          draw_rect(
-              getInitPoint(item).x * zoomScale,
-              getInitPoint(item).y * zoomScale,
-              Math.abs(item.x1 - item.x2) * zoomScale,
-              Math.abs(item.y1 - item.y2) * zoomScale
-          );
-      })
-  }
-
-  function showPopup(e){
-
-      var rect = e.target.getBoundingClientRect();
-      currentRegionCoordinates.x2  = e.clientX - rect.left; //x position within the element.
-      currentRegionCoordinates.y2 = e.clientY - rect.top;  //y position within the element.
-
-      // create pop up modal
-      let popup = document.createElement('div');
-      popup.setAttribute("class", "modal");
-      popup.setAttribute("id", "myPopup");
-      popup.setAttribute("role", "dialog");
-
-      let popupmodalDialog = document.createElement('div');
-      popupmodalDialog.setAttribute("class", "modal-dialog");
-      popupmodalDialog.id = "dialog";
-
-      let modalContent = document.createElement('div');
-      modalContent.setAttribute("class", "modal-content");
-      modalContent.id = "content";
-
-      let modalheader = document.createElement('div');
-      modalheader.setAttribute("class", "modal-header");
-      modalheader.id = "header";
-
-      let modalBody = document.createElement('div');
-      modalBody.setAttribute("class", "modal-body");
-      modalBody.id = "body";
-      
-      let modalFooter = document.createElement('div');
-      modalFooter.setAttribute("class",  "modal-footer");
-      modalFooter.id = "footer";
-
-      let btnUpdate = document.createElement('input');
-      btnUpdate.setAttribute("type", "button");
-      btnUpdate.setAttribute("class", "btn btn-primary");
-      btnUpdate.setAttribute("data-toggle" ,"modal");
-      btnUpdate.setAttribute("data-target" ,"#myPopup");
-      btnUpdate.setAttribute("data-dissmis", "modal");
-      btnUpdate.setAttribute("aria-label", "Close");
-      btnUpdate.setAttribute("id", "btnClose");
-      modalFooter.append(btnUpdate);
-
-      let labelInput = document.createElement('input');
-      labelInput.className += "form-control";
-      modalBody.append(labelInput);
-
-      modalContent.appendc(modalheader);
-      modalContent.append(modalBody);
-      modalContent.append(modalFooter);
-
-      popupmodalDialog.append(modalContent);
-      popup.append(popupmodalDialog);
-
-      /*let a = document.createElement('a');
-      a.setAttribute("href", "#");
-      a.setAttribute("data-toggle","modal");
-      a.setAttribute("data-target","#mymodal");
-      a.setAttribute("value","annotate");*/
-
-      //jQuery($("#myPopup")).modal("show");
-
-      //$('[id="myPopup"]').modal("show");
-
-     window.appendChild(popup);
-
-  }
-
-
-
-
-
-
-
-  /**
-   * Load existing/other annotations for the loaded image
-   * @param {Array} shape_attrs 
-   */
-  function loadExistingAnnotations(shape_attrs) {
-      canvasCtx.strokeStyle = "red";
-      listRegionCoordinates = shape_attrs;
-      drawExistingRegions();
-  }
-
-  function getInitPoint(coordinates) {
-      let reg_x = coordinates.x2;
-      let reg_y = coordinates.y2;
-      if (coordinates.x1 < coordinates.x2) {
-          reg_x = coordinates.x1;
-          if (coordinates.y1 < coordinates.y2) {
-              reg_y = coordinates.y1;
-          }
-      } else {
-          if (coordinates.y1 < coordinates.y2) {
-              reg_y = coordinates.y1;
-          }
-      }
-      return {
-          x: reg_x,
-          y: reg_y
-      }
-  }
-
-  /**
-   * Draw rectangle
-   * @param {Integer} x 
-   * @param {Integer} y 
-   * @param {Integer} dx 
-   * @param {Integer} dy 
-   */
-  function draw_rect(x, y, dx, dy) {
-      canvasCtx.beginPath();
-      canvasCtx.rect(x, y, dx, dy);
-      canvasCtx.closePath();
-      canvasCtx.stroke();
-  }
-
-  /**
-   * Function to prepare image and canvas for annotations
-   * @param {Object} config Set of configurations to load image and canvas
-   */
-  function setup(config) {
-      if (!(config && config.imageSrc && config.containerId)) {
-          console.error("[Annotater] Configuration error: something missing in the config. Please check");
-          return false;
-      }
-      // Parse config to get {imageSrc, containerId, zoom actions id}
-      const imageContainerId = document.getElementById(config.containerId);
-
-      const canvasEl = document.createElement('canvas');
-      canvasEl.setAttribute("id", "canvas");
-      //canvasEl.style.position = "absolte";
-      canvasEl.style.position = "relative";
-
-      const imageEl = document.createElement('img');
-      imageEl.setAttribute('src', config.imageSrc);
-      imageEl.style.position = "absolute";
-      imageEl.style.objectFit = "contain";
-      imageEl.setAttribute("id", "image");
-      imageEl.onload = function () {
-          canvasCtx = canvasEl.getContext('2d');
-          canvasCtx.canvas.height = imageEl.height;
-          canvasCtx.canvas.width = imageEl.width;
-          //canvasCtx.canvas.width = document.getElementById("image_annotate").width;
-          //canvasCtx.canvas.height = document.getElementById("image_annotate").height;
-          canvasCtx.strokeStyle = "red";
-          attachCanvasEvents();
-      }
-
-      imageContainerId.appendChild(imageEl);
-      imageContainerId.appendChild(canvasEl);
-      // Bind zoom events
-      attachEvents(config);
-      return true;
-  }
-
-  /**
-   * Get current coordinates of the annotation
-   */
-  function getCurrentCoordinates() {
-      return currentRegionCoordinates;
-  }
-
-  function attachCanvasEvents() {
-      window.addEventListener('mouseup', function (e) {
-          if (onDrag) {
-              zoomOffset = 1;
-              onDrag = false;
-              showPopup(e);
-          }
-      });
-      canvasCtx.canvas.addEventListener('mousedown', onMouseDown);
-      canvasCtx.canvas.addEventListener('mousemove', onMouseMove);
-      //canvasCtx.canvas.addEventListener('mouseup', onMouseUp);
-  }
-
-  function attachEvents(config) {
-      document.getElementById(config.zoomOutId).addEventListener('click',
-          zoom.bind(this, 'image', 0.95)
-      );
-      document.getElementById(config.zoomInId).addEventListener('click',
-          zoom.bind(this, 'image', 1.05)
-      );
-      document.getElementById(config.resetId).addEventListener('click',
-          resetSize.bind(this, 'image')
-      );
-  }
-
-  function download() {
-      let link = document.createElement('a');
-      let c = document.createElement('canvas');
-      c.width = canvasCtx.canvas.width;
-      c.height = canvasCtx.canvas.height;
-      let ct = c.getContext('2d');
-      let img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = function () {
-          ct.drawImage(img, 0, 0, c.width, c.height);
-          ct.drawImage(document.getElementById('canvas'), 0, 0);
-          let saved_image = c.toDataURL();
-          link.download = 'filename.png';
-          link.href = saved_image;
-          link.click()
-      }
-      img.src = this.config.imageSrc;
-  }
-
-  Annotater.prototype = {
-      constructor: Annotater,
-      loadAnnotations: function (shape_attrs) {
-          if (!shape_attrs || !Array.isArray(shape_attrs)) {
-              console.log("[Annotater] no co-ordinates provided");
-              return;
-          }
-          loadExistingAnnotations(shape_attrs);
-      },
-      getCurrentAnnotation: getCurrentCoordinates,
-      downloadImageWithAnnotations: download
-  }
-  window.Annotater = Annotater;
-})(window);
-
-
-function start() {
-  let myAnnotaterInstance = new Annotater({
-      imageSrc: "images/dog.jpg",
-      containerId: "image-container",
-      zoomInId: "zoomin",
-      zoomOutId: "zoomout",
-      resetId: "reset"
-  });
+// Make sure a value is within the given bounds
+function checkBounds(val, max, min) {
+	if (val > max) {
+		return max;
+	}
+	else if (val < min)  {
+		return min;
+	}
+	else {
+		return val;
+	}
 }
+
+// Remove polygons from the canvas
+function clearPolygons() {
+	canvas.clearPolygons();
+}
+
+// Draw a point on a canvas
+function drawPt(pt, ctx, radius, color) {
+    ctx.beginPath();
+    ctx.arc(pt[0], pt[1], radius, 0, Math.PI*4);
+    ctx.fillStyle = color;
+    ctx.fill();
+}
+
+
+// Draw polygons on a canvas
+function drawPolygon(pts, ctx, color, zoom) {
+	
+	// Draw the points in the polygons, adjusted to fit the canvas zoom
+    for (var i=0; i < pts.length; ++i) {
+        drawPt(pts[i], ctx, adjustSizeForZoom(3, zoom), color);
+    }
+	
+	// Draw the paths between the polygon points
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+	
+    for (var i=1; i < pts.length; ++i) {
+        ctx.lineTo(pts[i][0], pts[i][1]);
+    }
+	
+    ctx.lineTo(pts[0][0], pts[0][1]);
+    ctx.strokeStyle = color;
+	ctx.lineWidth = adjustSizeForZoom(2, zoom);
+	ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+	ctx.fill();
+    ctx.stroke();
+}
+
+// Shift a polygon point's coordinates
+function shiftPt(pt, shift) {
+    return [pt[0] + shift[0], pt[1] + shift[1]];
+}
+
+// Adjust the size of a value according to the canvas zoom level
+function adjustSizeForZoom(num, zoom) {
+	return num * (1/zoom);
+}
+
+// Return the square of a value
+function sq(x) {
+    return x*x;
+}
+
+// Get the distance between two coordinates
+function dist(pt1, pt2) {
+    if (pt2 === undefined) {
+        pt2 = [0, 0];
+    }
+
+    var pt = shiftPt(pt1, [-pt2[0], -pt2[1]]);
+
+    return sq(pt[0]) + sq(pt[1]);
+}
+
+// React to the user moving the mouse
+function mouseMoveHandler(e) {
+	
+	// Drag a polygon point
+    if (canvas.mode === canvasMode.cDragPt) {
+        canvas.moveSelPt(e.offsetX, e.offsetY);
+    }
+	
+	// Draw a rectangular bounding box
+	else if (canvas.mode === canvasMode.cDrawBox) {
+		canvas.drawBox(event.x, event.y, false);
+	}
+	
+	// Check if the user is hovering over a polygon point
+	else {
+        canvas.findHoverPt(e.offsetX, e.offsetY);
+    }
+}
+
+// React to the user clicking the mouse down
+function mouseDownHandler(e) {
+	var toolSelected = getSelectedTool();
+	var labelSelected = getSelectedLabel();
+	
+	// Start dragging a polygon point
+    if (toolSelected == "select") {
+		canvas.beginDragPt();
+	}
+	
+	// Start drawing a rectangular bounding box
+	else if (toolSelected == "box" && labelSelected != null) {
+        canvas.startDrawing(event.x, event.y, labelSelected, "box");
+    }
+}
+
+// React to the user finishing a mouse click
+function mouseUpHandler(e) {
+	var toolSelected = getSelectedTool();
+	var labelSelected = getSelectedLabel();
+	
+	// Finish dragging a polygon point
+	if (canvas.mode === canvasMode.cDragPt) {
+		canvas.endDragPt();
+	}
+	
+	// Finish drawing a rectagular bounding box
+    else if (canvas.mode === canvasMode.cDrawBox) {
+		canvas.drawBox(event.x, event.y, true);
+    }
+}
+
+// React to the user clicking the mouse
+function mouseClickHandler(e) {
+	var toolSelected = getSelectedTool();
+	var labelSelected = getSelectedLabel();
+	
+	// Start or continue drawing a polygon
+	if (toolSelected == "polygon" && labelSelected != null) {
+		if (canvas.mode != canvasMode.cDrawPoly) {
+			canvas.startDrawing(event.x, event.y, labelSelected, "polygon");
+		}
+		else {
+			canvas.drawPoly(event.x, event.y);
+		}
+	}
+	
+	// Select a polygon point
+	else if (toolSelected == "select") {
+		canvas.selectPt();
+	}
+}
+
+// Zoom the canvas when the user uses the scrollwheel
+function mouseWheelHandler(e) {
+	canvas.zoomCanvas(e);
+}
+
+// React to the user pressing a keyboard key
+function keyUpHandler(e) {
+	
+	// Delete the selected point if they press 'delete'
+    if (e.key === "Delete") {
+        canvas.deletePt();
+	}
+	
+	// Finish drawing the current polygon if they press 'enter'
+	else if (e.key == "Enter") {
+		canvas.finishPoly();
+	}
+}
+
+// Check which tool the user has selected
+function getSelectedTool() {
+	if (document.getElementById("button-box").checked) {
+        return "box";
+    }
+    else if (document.getElementById("button-polygon").checked) {
+        return "polygon";
+    }
+	else if (document.getElementById("button-select").checked) {
+        return "select";
+    }
+	return null;
+}
+
+// Check which label the user has selected
+function getSelectedLabel() {
+	var select = document.getElementById('animals')
+	var selection = select.options[select.selectedIndex].value;
+	return selection;
+}
+
+

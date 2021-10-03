@@ -7,18 +7,15 @@ var detectButton = document.getElementById('btnDetect').addEventListener('click'
 	var imageName = filePicker.files[0].name;
 	var opts = {
 		method: 'POST',
-		header: 'application/json',
-		body: JSON.stringify(imageName)
+		header: 'text',
+		body: imageName
 	}
 
 	fetch('ml_connection/detect', opts).then(response => {
 		console.log(response);
-		coordinates = response;
+		coordinates = JSON.stringify(response);
 	});
 });
-
-
-
 
 
 var img = new Image();

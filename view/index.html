@@ -7,6 +7,7 @@
   <title>Image Annotator</title>
   <link rel="stylesheet" href="/css/bootstrap.min.css">
   <link rel="stylesheet" href="/css/styles.css">
+  <script src="https://www.google.com/recaptcha/api.js?render=6Lc5JKccAAAAAAmv8IrC9qrhCvxs-llJLGhvCdMl" nonce="{NONCE}"></script>  
 </head>
 
 
@@ -41,7 +42,9 @@
                         class="icon"></span> Keep me Signed in</label> </div>
                   <div class="group"> <input type="submit" class="button" value="Sign In"> </div>
                   <div class="hr"></div>
-                  <div class="foot"> <a href="#">Forgot Password?</a> </div>
+		 
+		<div class="g-recaptcha" data-sitekey="6Lc5JKccAAAAAAmv8IrC9qrhCvxs-llJLGhvCdMl"></div>
+
                 </div>
               </form>
               <form action="/signup" method="POST">
@@ -57,7 +60,6 @@
                   <div class="group"> <input type="submit" class="button" value="Sign Up" id="btnSign"
                       onclick="return validate();"> </div>
                   <div class="hr"></div>
-                  <div class="foot"> <label for="tab-1">Already Member?</label> </div>
                 </div>
               </form>
             </div>
@@ -69,3 +71,4 @@
 </body>
 
 </html>
+

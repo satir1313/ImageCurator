@@ -10,8 +10,11 @@ const JwtStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
 const knex = require('knex');
 const jwt = require('jsonwebtoken');
+const dbClient = require('./dbconnection');
 var env = process.env.NODE_ENV || 'development';
 const configure = require('./config.js')[env];
+//dbClient.connect();
+//dbClient.createTable();
 const knexDB = knex({
     client: configure.client,
     connection: {
@@ -26,17 +29,27 @@ const knexDB = knex({
     }
 });
 const db = require('./queries');
-const { expressCspHeader, INLINE, NONE, SELF, UNSAFE_INLINE, ALLOW_SCRIPTS, UNSAFE_URL, DATA } = require('express-csp-header');
+const { expressCspHeader, INLINE, NONE, SELF, UNSAFE_INLINE, ALLOW_SCRIPTS, UNSAFE_URL, DATA, BLOB } = require('express-csp-header');
 const cors = require('cors');
 const path = require('path');
-const dbClient = require('./dbconnection');
 const alert = require('alert');
 const bookshelf = require('bookshelf');
 const securePassword = require('bookshelf-secure-password');
 const bs = bookshelf(knexDB);
 const imageServer = require('./connect_To_Image_server');
 const mlServer = require('./connect_To_ML');
-var fs = require('fs');
+const fs = require('fs');
+const multer  = require('multer')
+
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, './upload')
+    },
+    filename: function (req, file, cb) {
+      cb(null, file.originalname)
+    }
+})
+var upload = multer({ storage: storage });
 
 
 bs.plugin(securePassword);
@@ -48,7 +61,6 @@ const User = bs.Model.extend({
 
 const { response } = require('express');
 
-dbClient.connect;
 
 /*router.use(function timeLog(req, res, next) {
     console.log('Time: ', Date.now());
@@ -60,13 +72,12 @@ router.use(expressCspHeader({
         'default-src': [SELF],
         'script-src': [SELF, INLINE, UNSAFE_INLINE, ALLOW_SCRIPTS],
         'style-src': [SELF],
-        'img-src': [SELF, DATA],
+        'img-src': [SELF, DATA, BLOB],
         'worker-src': [NONE],
         'block-all-mixed-content': true,
-        'base-uri': [SELF]
+        'base-uri': [SELF],
     }
 }));
-
 
 
 router.use(cors());
@@ -78,14 +89,18 @@ router.use(bodyParser.json());
 // let express to access to static folders to be served in the static files like index.html
 router.use(express.static('static'));
 router.use(express.static('view'));
-router.use(express.static('public'));
-router.use('/images', express.static('public/images'));
+router.use(express.static(__dirname + '/public'));
+router.use('/images', express.static(__dirname + '/public/images')); // redirect to images folder
 router.use('/css', express.static(__dirname + '/node_modules/bootstrap/dist/css')); // redirect CSS bootstrap
 router.use('/js', express.static(__dirname + '/node_modules/bootstrap/dist/js')); // redirect js bootstrap
 router.use('/dist', express.static(__dirname + '/node_modules/jquery/dist/')); // redirect CSS jquery
+router.use('/core', express.static(__dirname + '/node_modules/@uppy/core'));
+router.use('/dashboard', express.static(__dirname + '/node_modules/@uppy/dashboard'));
+router.use('/uppy', express.static(__dirname + '/node_modules/uppy'));
 router.use(express.static('bundle'));
 router.use(express.static('dist'));
 router.use('/Annotate_lib', express.static(__dirname + '/Annotate_lib'));
+router.use('/uploads', express.static('upload'));
 //router.use(favicon(path.join(__dirname,'/public/images/favicon.ico')));
 
 
@@ -96,6 +111,7 @@ router.get('/api/user/:id', db.getUserById);
 router.post('/users', db.createUser);
 router.put('/users/:id', db.updateUser);
 router.delete('/users/:id', db.deleteUser);
+router.post('/store', db.storePoints);
 
 //router.listen(port, () => {
 //console.log(`router is running on port ${port}.`);
@@ -227,6 +243,12 @@ router.get('/login', authenticateJWT, (req, res) => {
 });
 
 
+router.get('/logout', (req, res) => {
+    console.log("logging out");
+    res.redirect('/login');
+});
+
+
 router.get('/ml_connection', (req, res) => {
     res.send(`<h2> To check status of ML <h2>
                 <h3> /ml_connection/status <h3>
@@ -263,10 +285,39 @@ router.get('/ml_connection/detect', mlServer.startTraining, (req, res) => {
     res.send(`<h2> Connected To ML Server <h2> <p>${req.body}</p>`);
 });
 
+// to upload image in server upload folder
+router.post('/profile-upload-multiple', upload.array('profile-files', 12), (req, res) =>{
+    var response = '<a href="/">Home</a><br>';
+    response += "Files uploaded successfully.<br>";
+    for(var i=0;i<req.files.length;i++){
+        response += `<img src="${req.files[i].path}" /><br>`;
+    }
+});
+
+
+
+router.post('/ml_connection/detect', upload.single('profile-file'), mlServer.startTraining, (req, res) => {
+
+
+    // Convert base64 to buffer => <Buffer ff d8 ff db 00 43 00 ...
+    /*const buffer = Buffer.from(req.file.path, "base64");
+
+    const image = fs.writeFileSync('./public/images/new.jpg', buffer);
+
+    router.use(express.static('./public/images/new.jpg'));
+
+    var imgPath = './public/images/Image.jpg'*/
+
+   // res.send(`<h2> Connected To ML Server <h2> <p>${req.body}</p>`);
+   res.json(req.body);
+});
+
 
 router.post('/ml_connection/training', imageServer.uploadImage, mlServer.training, (req, res) =>{
-    res.send(`<h2> Connected To ML Server <h2>
-    the body of message is ${req.body}`);
+    /*res.send(`<h2> Connected To ML Server <h2>
+    the body of message is ${req.body}`);*/
+    res.sendFile(path.join(__dirname + '/view/annotate.html'));
+    //res.redirect('/annotate');
 });
 
 
@@ -283,6 +334,8 @@ router.get('/image_server/get_image', imageServer.getImage, (req, res) => {
 
     res.send(`<h2> Connected To ML Server <h2>  <p>${req.body}</p>`);
 });
+
+
 
 
 /*router.get('/protected', passport.authenticate('jwt', {session: false, }),  (req, res) =>{

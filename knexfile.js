@@ -1,4 +1,6 @@
 // Update with your config settings.
+const dotenv = require('dotenv');
+dotenv.config();
 
 module.exports = {
 
@@ -6,9 +8,9 @@ module.exports = {
     client: 'pg',
     connection: {
       host : 'localhost',
-      user : 'sha13',
-      password : '123456',
-      database : 'shieldtec',
+      user : process.env.DB_USER,
+      password : process.env.DB_PASS,
+      database : process.env.DB_NAME,
       port: 5432
     }
    /* client: 'pg',

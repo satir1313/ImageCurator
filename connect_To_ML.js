@@ -1,6 +1,7 @@
 const bodyParser = require('body-parser');
 const request = require('request');
 var fs = require('fs');
+const multer  = require('multer')
 const imageServer = require('./connect_To_Image_server');
 
 /*mlApp.listen(4058, () => {
@@ -42,8 +43,12 @@ const getProgress = function (req, res, next) {
 
 const startTraining = function (req, res, next) {
 
-    var imageAsBase64 = fs.readFileSync('./public/images/2.jpeg', 'base64');
+    
+    var imagePath = req.file.path;
+
+    var imageAsBase64 = fs.readFileSync('./' + imagePath, 'base64');
     var output = {image: imageAsBase64 };
+
     var jsonToUpload = JSON.stringify(output);
 
 

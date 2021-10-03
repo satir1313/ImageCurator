@@ -125,7 +125,7 @@ const updateUser = (request, response) => {
   )
 }
 
-const updateUserByID = (email ,time, id) => {
+const updateUserByID = (email, time, id) => {
   pool.query(
     'UPDATE login_user SET email = $1, login_time=$2 WHERE id = $3',
     [email, time, id],
@@ -148,6 +148,26 @@ const deleteUser = (request, response) => {
   })
 }
 
+const storePoints = (req, res) => {
+  console.log("in post");
+  var points = {
+    x: 0.01,
+    y: 0.0254,
+    w: 0.12,
+    y: 0.24
+  }
+  req.body = points;
+  const { layer_x, layer_y, imageId, time } = req.body;
+
+  pool.query('UPDATE class set layer_x = $1, layer_y = $2, image_id = $3, mod_time = $4',
+    [layer_x, layer_y, 1, new Date().toISOString()], (err, result) => {
+      if (err)
+        throw err;
+      res.status(200).send(`points added: ${new Date().toISOString()}`)
+    }
+  )
+}
+
 module.exports = {
   getImages,
   getImageById,
@@ -156,5 +176,6 @@ module.exports = {
   deleteUser,
   getUsers,
   getUserById,
-  updateUserByID
+  updateUserByID,
+  storePoints
 }

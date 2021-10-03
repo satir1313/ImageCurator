@@ -1,15 +1,15 @@
 body {
   margin: 0;
-  color: #6a6f8c;
-  background: #dab618;
+  color: #CDCDCD;
+  background: #FFFFFF;
   font: 600 16px/18px 'Open Sans', sans-serif
 }
 
 .login-box {
   width: 100%;
-  margin: auto;
   max-width: 525px;
-  min-height: 670px;
+  margin: auto;
+  min-height: 600px;
   position: relative;
   box-shadow: 0 12px 15px 0 rgba(0, 0, 0, .24), 0 17px 50px 0 rgba(0, 0, 0, .19)
 }
@@ -19,7 +19,7 @@ body {
   height: 100%;
   position: absolute;
   padding: 90px 70px 50px 70px;
-  background: rgba(0, 77, 77, .9)
+  background: #52A441;
 }
 
 .login-snip .login,
@@ -58,7 +58,7 @@ body {
 .login-snip .sign-in:checked+.tab,
 .login-snip .sign-up:checked+.tab {
   color: #fff;
-  border-color: #1161ee
+  border-color: #414141;
 }
 
 .login-space {
@@ -76,7 +76,7 @@ body {
 .login-space .group .input,
 .login-space .group .button {
   width: 100%;
-  color: #fff;
+  color: #414141;
   display: block
 }
 
@@ -85,7 +85,7 @@ body {
   border: none;
   padding: 15px 20px;
   border-radius: 25px;
-  background: rgba(255, 255, 255, .1)
+  background: #FFFFFF;
 }
 
 .login-space .group input[data-type="password"] {
@@ -93,12 +93,13 @@ body {
 }
 
 .login-space .group .label {
-  color: #aaa;
+  color: #414141;
   font-size: 12px
 }
 
 .login-space .group .button {
-  background: #1161ee
+  background: #414141;
+  color: #FFFFFF;
 }
 
 .login-space .group label .icon {
@@ -138,7 +139,7 @@ body {
 }
 
 .login-space .group .check:checked+label .icon {
-  background: #1161ee
+  background: #52A441;
 }
 
 .login-space .group .check:checked+label .icon:before {
@@ -204,4 +205,5 @@ a {
   width: 1000px; 
   height: 700px;
 }
+
 

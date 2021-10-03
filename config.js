@@ -4,10 +4,10 @@ dotenv.config();
 const configure = {
     development: {
         client: 'pg',
-        database: 'shieldtec',
-        user: 'sha13',
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER,
         host: 'localhost',
-        password: '123456',
+        password: process.env.DB_PASS,
         port: 5432,
         ssl: {
             rejectUnauthorized: false

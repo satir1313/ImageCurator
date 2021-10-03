@@ -5,45 +5,66 @@
     <title>Simple Image Annotation Tool</title>
     <link rel="stylesheet" href="/css/annotate.css" />
     <script src="https://kit.fontawesome.com/9c77ccc682.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link src="/core/dist/style.min.css" rel="stylesheet" />
+    <link src="/dashboard/dist/style.min.css" rel="stylesheet" />
+    <link src="/uppy/dist/uppy.min.css" rel="stylesheet" />
+    <script src="/uppy/dist/uppy.min.js"></script>
 </head>
-
-
 <script src="dist/jquery.min.js"></script>
 
 
+<script>
+    function imgchange(f) {
+        var filePath = $('#fileToDetect').val();
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            $('#imgs').attr('src', e.target.result);
+            //localStorage.setItem("imageToDetect", reader.result);
+        };
+
+
+        var t = document.getElementById('fileToDetect');
+
+        var img = reader.readAsDataURL(f.files[0]);
+
+        console.log(f.files[0].name);
+
+        var dataaa = { "image": f.files[0].name }
+        $.ajax({
+            type: "POST",
+            url: "http://localhost:4056/ml_connection/detect/",
+            data: JSON.stringify(dataaa),
+            contentType: 'application/json',
+            success: function (res) {
+                console.log(res);
+                console.log("Added");
+            }.bind(this),
+            error: function (xhr, status, err) {
+                console.error(xhr, status, err.toString());
+            }.bind(this)
+        });
+    }
+
+</script>
+
+<script>
+    
+    $('#btnDetect').click(function () {
+            console.log('Button Clicked');
+            $.ajax({
+                url: '/annotate',
+                type: 'POST',
+                data: JSON.stringify(data),
+                dataType: 'json',
+            }).done(function (data) {
+                console.log(data);
+            });
+        })
+
+</script>
+
 <body>
 
-    <div class="container-fluid">
-        <div class="form-group">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row">
-                        <nav class="navbar navbar-expand-lg navbar-light">
-                            <a class="navbar-brand" href="#">Navbar</a>
-                            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-                                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                                <span class="navbar-toggler-icon"></span>
-                            </button>
-                            <div class="collapse navbar-collapse" id="navbarNav">
-                                <ul class="navbar-nav">
-                                    <li class="nav-item active">
-                                        <a class="nav-link" href="#">Home</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="#">log out</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link disabled" href="#">Zoom</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </nav>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
     <div id="tool">
         <div id="toolbar">
 
@@ -86,28 +107,50 @@
             <button type="button" id="output-button" onclick="output()">OUTPUT</button>
         </div>
 
-
-        <form action="/ml_connection/training" method="POST">
-            <div>
-                <input type="file" name="filePicker" id="filePicker" placeholder="choose an image"
-                class="custom-file-input" multiple="multiple" accept="image/png, image/gif, image/jpeg">
-                <input type="submit" class="button" value="Send Image" id="btnSend" />
-            </div>
-        </form>
-
-
-        <div id="ouput">
-            <input type="submit" class="button" value="Send Image" id="btnSend" />
-        </div>
-
         <div id="results">
             <p></p>
         </div>
 
-    </div>
+        <!--<div class="col-md-6">
+            <form action="#" method="post" enctype="multipart/form-data">
 
-    <script src="./annotate.js"></script>
+                <img id="imgs" width="170px" height="160px"></img>
 
+                <label for="file">Filename:</label>
+                <input type="file" name="file" id="file" accept="image/png, image/gif, image/jpeg, image/jpg" onchange="imgchange(this)">
+            </form>
+        </div>
+
+        <form action="/ml_connection/detect" method="POST">
+            <div>
+                <input type="submit" class="btn btn-primary" value="Detect" id="btnUpload" />
+            </div>
+        </form>
+    </div>-->
+
+
+        <form method="POST" action="/profile-upload-multiple" enctype="multipart/form-data">
+            <div>
+                <label>Upload multiple images on the server</label>
+                <input type="file" name="profile-files" required multiple />
+            </div>
+            <div>
+                <input type="submit" value="Upload" />
+            </div>
+        </form>
+
+
+            <div>
+                <label>Upload image to detect objects</label>
+                <input type="file" name="profile-file" id="fileToDetect" accept="image/png, image/gif, image/jpeg, image/jpg"
+                    onchange="imgchange(this)" required />
+            </div>
+            <div>
+                <input type="submit" value="Detect" id="btnDetect"/>
+            </div>
+
+
+        <script src="./annotateBundle.js"></script>
 </body>
 
 </html>

@@ -2,12 +2,13 @@ const request = require('request');
 const bodyParser = require('body-parser');
 var fs = require('fs');
 const qs = require('querystring');
+const multer = require('multer');
 
 
 const uploadImage = (req, res, next) => {
 
-    console.log('./public/images/' + req.body.filePicker);
-    var imageAsBase64 = fs.readFileSync('./public/images/' + req.body.filePicker, 'base64');
+    console.log(req.body.filePicker);
+    var imageAsBase64 = fs.readFileSync(req.body.filePicker, 'base64');
 
     var output = { filename: req.body.filePicker, image: imageAsBase64 };
     var jsonToUpload = JSON.stringify(output);
